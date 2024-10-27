@@ -11,16 +11,20 @@ using PropertyRentalManagementSystem.Models;
 
 namespace PropertyRentalManagementSystem.Controllers
 {
-    [Authorize(Roles = "Property Manager")]
+    //[Authorize(Roles = "Property Manager")]
     public class ApartmentsController : Controller
     {
         private PropertyRentalManagementDBEntities db = new PropertyRentalManagementDBEntities();
 
         // GET: Apartments
-        public ActionResult Index(string appartmentNumberStatus, string rooms, string bathrooms)
+        public ActionResult Index(string appartmentNumberStatus, string rooms, string bathrooms, string price)
         {
             int userId = (int)Session["UserId"];
             var apartments = db.Apartments.Include(a => a.Building).Include(a => a.Status);
+
+            ViewBag.AvailableApartmentCount = apartments.Count(a => a.Status.StatusName == "Available");
+            ViewBag.RentedApartmentCount = apartments.Count(a => a.Status.StatusName == "Rented");
+
 
             // Filter by AppartmentNumber or Status if search term is provided
             if (!string.IsNullOrEmpty(appartmentNumberStatus))
@@ -56,6 +60,19 @@ namespace PropertyRentalManagementSystem.Controllers
                 }
             }
 
+            // Filter by Price if search term is provided
+            if (!string.IsNullOrEmpty(price))
+            {
+                if (decimal.TryParse(price, out decimal priceValue))
+                {
+                    apartments = apartments.Where(a => a.Price <= priceValue);
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Please enter a valid price.";
+                }
+            }
+
             return View(apartments.ToList());
         }
 
@@ -77,8 +94,13 @@ namespace PropertyRentalManagementSystem.Controllers
         // GET: Apartments/Create
         public ActionResult Create()
         {
+            // Only show 'Available' and 'Rented' statuses in the dropdown
+            var statusList = db.Status
+                               .Where(s => s.StatusName == "Available" || s.StatusName == "Rented")
+                               .ToList();
+            ViewBag.StatusId = new SelectList(statusList, "StatusId", "StatusName");
             ViewBag.BuildingId = new SelectList(db.Buildings, "BuildingId", "BuildingName");
-            ViewBag.StatusId = new SelectList(db.Status, "StatusId", "StatusName");
+
             return View();
         }
 
@@ -91,6 +113,11 @@ namespace PropertyRentalManagementSystem.Controllers
         {
             try
             {
+                if (apartment.DateListed > DateTime.Today)
+                {
+                    ModelState.AddModelError("DateListed", "The Date Listed cannot be a future date. Please select today's date or an earlier date.");
+                }
+
                 // Check for duplicate apartment number within the same building
                 if (db.Apartments.Any(a => a.BuildingId == apartment.BuildingId && a.AppartmentNumber == apartment.AppartmentNumber))
                 {
@@ -102,11 +129,11 @@ namespace PropertyRentalManagementSystem.Controllers
 
                 if (ModelState.IsValid)
                 {
+                    // Image upload handling
                     if (imageUpload != null && imageUpload.ContentLength > 0)
                     {
                         var fileName = apartment.AppartmentNumber + "_" + apartment.BuildingId + Path.GetExtension(imageUpload.FileName);
                         var path = Path.Combine(Server.MapPath("~/Content/Images"), fileName);
-
                         imageUpload.SaveAs(path);
                         apartment.ImagePath = "/Images/" + fileName;
                     }
@@ -117,7 +144,7 @@ namespace PropertyRentalManagementSystem.Controllers
 
                     db.Apartments.Add(apartment);
                     db.SaveChanges();
-                    TempData["Message"] = "Apartment created successfully!";
+                    TempData["SuccessMessage"] = "Apartment created successfully!";
                     return RedirectToAction("Index");
                 }
             }
@@ -139,16 +166,29 @@ namespace PropertyRentalManagementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Apartment apartment = db.Apartments.Find(id);
+
+            var apartment = db.Apartments
+                              .Include(a => a.Status)
+                              .Include(a => a.Building)
+                              .FirstOrDefault(a => a.ApartmentId == id);
+
             if (apartment == null)
             {
                 return HttpNotFound();
             }
 
+            // Status dropdown with the current status selected
+            var statusList = db.Status
+                               .Where(s => s.StatusName == "Available" || s.StatusName == "Rented")
+                               .ToList();
+            ViewBag.StatusId = new SelectList(statusList, "StatusId", "StatusName", apartment.StatusId);
+
+            // Building dropdown with the current building selected
             ViewBag.BuildingId = new SelectList(db.Buildings, "BuildingId", "BuildingName", apartment.BuildingId);
-            ViewBag.StatusId = new SelectList(db.Status, "StatusId", "StatusName", apartment.StatusId);
+
             return View(apartment);
         }
+
 
         // POST: Apartments/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to, for 
@@ -159,6 +199,12 @@ namespace PropertyRentalManagementSystem.Controllers
         {
             try
             {
+                // Check if the date is in the future
+                if (apartment.DateListed > DateTime.Today)
+                {
+                    ModelState.AddModelError("DateListed", "The Date Listed cannot be a future date. Please select today's date or an earlier date.");
+                }
+
                 if (ModelState.IsValid)
                 {
                     var apartmentInDb = db.Apartments.Find(apartment.ApartmentId);
@@ -167,10 +213,12 @@ namespace PropertyRentalManagementSystem.Controllers
                         apartmentInDb.AppartmentNumber = apartment.AppartmentNumber;
                         apartmentInDb.Rooms = apartment.Rooms;
                         apartmentInDb.Bathrooms = apartment.Bathrooms;
+                        apartmentInDb.Price = apartment.Price;
                         apartmentInDb.DateListed = apartment.DateListed;
                         apartmentInDb.StatusId = apartment.StatusId;
                         apartmentInDb.BuildingId = apartment.BuildingId;
 
+                        // Handle image upload if a new file is uploaded
                         if (imageUpload != null && imageUpload.ContentLength > 0)
                         {
                             var fileName = apartment.AppartmentNumber + "_" + apartment.BuildingId + Path.GetExtension(imageUpload.FileName);
@@ -180,7 +228,7 @@ namespace PropertyRentalManagementSystem.Controllers
                         }
 
                         db.SaveChanges();
-                        TempData["Message"] = "Apartment updated successfully!";
+                        TempData["SuccessMessage"] = "Apartment updated successfully!";
                         return RedirectToAction("Index");
                     }
                     else
@@ -194,10 +242,14 @@ namespace PropertyRentalManagementSystem.Controllers
                 TempData["ErrorMessage"] = "An error occurred while updating the apartment. " + ex.Message;
             }
 
+            // Reload dropdowns for Status and Building in case of an error
+            var statusList = db.Status.Where(s => s.StatusName == "Available" || s.StatusName == "Rented").ToList();
+            ViewBag.StatusId = new SelectList(statusList, "StatusId", "StatusName", apartment.StatusId);
             ViewBag.BuildingId = new SelectList(db.Buildings, "BuildingId", "BuildingName", apartment.BuildingId);
-            ViewBag.StatusId = new SelectList(db.Status, "StatusId", "StatusName", apartment.StatusId);
+
             return View(apartment);
         }
+
 
 
         // GET: Apartments/Delete/5
@@ -231,7 +283,7 @@ namespace PropertyRentalManagementSystem.Controllers
 
                 db.Apartments.Remove(apartment);
                 db.SaveChanges();
-                TempData["Message"] = "Apartment deleted successfully!";
+                TempData["SuccessMessage"] = "Apartment deleted successfully!";
             }
             catch (Exception ex)
             {

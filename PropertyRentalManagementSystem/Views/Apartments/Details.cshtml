@@ -1,74 +1,34 @@
 ﻿@model PropertyRentalManagementSystem.Models.Apartment
 
-@{
-    ViewBag.Title = "Details";
-}
+<h2 class="dashboard-title">Apartment Details</h2>
 
-<h2>Details</h2>
+<div class="apartment-details-card">
+    <!-- Display Image (only if there is one) -->
+    <div class="apartment-image-container">
+        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        {
+            <img src="~/Content/@Model.ImagePath" alt="Apartment Image" class="apartment-image" />
+        }
+        else
+        {
+            <p>No image available</p>
+        }
+    </div>
 
-<div>
-    <h4>Apartment</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.AppartmentNumber)
-        </dt>
+    <!-- Display Apartment Details -->
+    <div class="apartment-info">
+        <h3>Apartment Number: @Model.AppartmentNumber</h3>
+        <p><strong>Building Name:</strong> @Model.Building.BuildingName</p>
+        <p><strong>Rooms:</strong> @Model.Rooms</p>
+        <p><strong>Bathrooms:</strong> @Model.Bathrooms</p>
+        <p><strong>Status:</strong> @Model.Status.StatusName</p>
+        <p><strong>Price:</strong> @Model.Price.ToString("C")</p> <!-- Display price as currency -->
+        <p><strong>Date Listed:</strong> @Model.DateListed.ToString("yyyy-MM-dd")</p>
+    </div>
 
-        <dd>
-            @Html.DisplayFor(model => model.AppartmentNumber)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Rooms)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Rooms)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Bathrooms)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Bathrooms)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.DateListed)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.DateListed)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.ImagePath)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.ImagePath)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Building.BuildingName)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Building.BuildingName)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Status.StatusName)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Status.StatusName)
-        </dd>
-
-    </dl>
+    <!-- Back and Edit Links -->
+    <div class="details-actions">
+        @Html.ActionLink("Edit", "Edit", new { id = Model.ApartmentId }, new { @class = "btn btn-warning" })
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.ApartmentId }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>

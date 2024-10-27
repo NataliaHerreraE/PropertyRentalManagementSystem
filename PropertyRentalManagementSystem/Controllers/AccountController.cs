@@ -25,31 +25,38 @@ namespace PropertyRentalManagementSystem.Controllers
         {
             if (ModelState.IsValid)
             {
+                // Authenticate the user
                 var user = db.Users.FirstOrDefault(u => u.Email == model.Email && u.Password == model.Password);
                 if (user != null)
                 {
+                    // Get role name
                     var roleName = db.Roles.FirstOrDefault(r => r.RoleId == user.RoleId)?.RoleName;
 
-                    // Set session variables
-                    Session["UserName"] = user.Email;
-                    Session["UserId"] = user.UserId;
-                    Session["RoleId"] = user.RoleId;
-                    Session["RoleName"] = roleName;
-
-                    FormsAuthentication.SetAuthCookie(user.Email, false);
-
-                    // Check the role and redirect to the appropriate dashboard
-                    if (roleName == "Property Owner" || roleName == "Administrator")
+                    // Check if the role is valid and assign session values
+                    if (roleName == "Property Owner" || roleName == "Administrator" || roleName == "Property Manager")
                     {
-                        return RedirectToAction("Index", "OwnersAdministratorsDashboard");
-                    }
-                    else if (roleName == "Property Manager")
-                    {
-                        return RedirectToAction("Index", "PropertyManagerDashboard");
+                        // Set session variables
+                        Session["UserName"] = user.Email;
+                        Session["UserId"] = user.UserId;
+                        Session["RoleId"] = user.RoleId;
+                        Session["RoleName"] = roleName;
+
+                        // Set authentication cookie
+                        FormsAuthentication.SetAuthCookie(user.Email, false);
+
+                        // Redirect to appropriate dashboard based on role
+                        if (roleName == "Property Owner" || roleName == "Administrator")
+                        {
+                            return RedirectToAction("Index", "OwnersAdministratorsDashboard");
+                        }
+                        else if (roleName == "Property Manager")
+                        {
+                            return RedirectToAction("Index", "PropertyManagerDashboard");
+                        }
                     }
                     else
                     {
-                        // Clear session if role is not recognized
+                        // Role not recognized, clear session and display error
                         Session.Clear();
                         ModelState.AddModelError("", "Access Denied. Invalid role assigned.");
                     }

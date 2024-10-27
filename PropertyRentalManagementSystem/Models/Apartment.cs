@@ -30,6 +30,7 @@ namespace PropertyRentalManagementSystem.Models
         public System.DateTime DateListed { get; set; }
         public int StatusId { get; set; }
         public string ImagePath { get; set; }
+        public decimal Price { get; set; }
     
         public virtual Building Building { get; set; }
         public virtual Status Status { get; set; }

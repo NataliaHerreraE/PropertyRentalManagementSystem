@@ -12,7 +12,7 @@ using PropertyRentalManagementSystem.Models;
 
 namespace PropertyRentalManagementSystem.Controllers
 {
-    [Authorize(Roles = "Property Manager")]
+    //[Authorize(Roles = "Property Manager")]
     public class BuildingsController : Controller
     {
         private PropertyRentalManagementDBEntities db = new PropertyRentalManagementDBEntities();
@@ -79,6 +79,13 @@ namespace PropertyRentalManagementSystem.Controllers
                 {
                     TempData["ErrorMessage"] = "A building with the same name already exists. Please choose a different name.";
                     return View(building);
+                }
+
+                // Restrict future dates for DateListed
+                if (building.DateListed > DateTime.Today)
+                {
+                    ModelState.AddModelError("DateListed", "The Date Listed cannot be a future date. Please select today's date or an earlier date.");
+                    return View(building); // Return early to display the error message
                 }
 
                 if (ModelState.IsValid)
@@ -156,7 +163,13 @@ namespace PropertyRentalManagementSystem.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    
+                    // Restrict future dates for DateListed
+                    if (building.DateListed > DateTime.Today)
+                    {
+                        ModelState.AddModelError("DateListed", "The Date Listed cannot be a future date. Please select today's date or an earlier date.");
+                        return View(building); // Return early to display the error message
+                    }
+
                     int userId = (int)Session["UserId"];
 
                     var buildingInDb = db.Buildings.Find(building.BuildingId);

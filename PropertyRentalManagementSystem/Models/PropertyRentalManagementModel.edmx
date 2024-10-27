@@ -17,6 +17,7 @@
           <Property Name="DateListed" Type="date" Nullable="false" />
           <Property Name="StatusId" Type="int" Nullable="false" />
           <Property Name="ImagePath" Type="nvarchar" MaxLength="255" />
+          <Property Name="Price" Type="decimal" Precision="6" Scale="2" Nullable="false" />
         </EntityType>
         <EntityType Name="Appointments">
           <Key>
@@ -439,6 +440,7 @@
           <NavigationProperty Name="Appointments" Relationship="Self.FK_Appointments_Apartments" FromRole="Apartments" ToRole="Appointments" />
           <NavigationProperty Name="Messages" Relationship="Self.FK_Messages_Apartments" FromRole="Apartments" ToRole="Messages" />
           <NavigationProperty Name="RentalAgreements" Relationship="Self.FK_RentalAgreements_Apartments" FromRole="Apartments" ToRole="RentalAgreements" />
+          <Property Name="Price" Type="Decimal" Nullable="false" Precision="6" Scale="2" />
         </EntityType>
         <EntityType Name="Appointment">
           <Key>
@@ -880,6 +882,7 @@
           <EntitySetMapping Name="Apartments">
             <EntityTypeMapping TypeName="PropertyRentalManagementDBModel.Apartment">
               <MappingFragment StoreEntitySet="Apartments">
+                <ScalarProperty Name="Price" ColumnName="Price" />
                 <ScalarProperty Name="ApartmentId" ColumnName="ApartmentId" />
                 <ScalarProperty Name="BuildingId" ColumnName="BuildingId" />
                 <ScalarProperty Name="AppartmentNumber" ColumnName="AppartmentNumber" />

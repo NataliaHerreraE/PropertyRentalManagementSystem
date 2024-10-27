@@ -10,7 +10,7 @@ using PropertyRentalManagementSystem.Models;
 
 namespace PropertyRentalManagementSystem.Controllers
 {
-    [Authorize(Roles = "Property Manager")]
+    //[Authorize(Roles = "Property Manager")]
     public class AppointmentsController : Controller
     {
         private PropertyRentalManagementDBEntities db = new PropertyRentalManagementDBEntities();
