@@ -1,0 +1,68 @@
+﻿@model IEnumerable<PropertyRentalManagementSystem.Models.User>
+
+<h2>Manage Property Managers</h2>
+
+
+<!-- Search bar -->
+@using (Html.BeginForm("Index", "Manager", FormMethod.Get))
+{
+    <div class="form-group">
+        @Html.TextBox("searchTerm", ViewBag.CurrentFilter as string, new { @class = "form-control", placeholder = "Search by First or Last Name" })
+        <input type="submit" value="Search" class="btn btn-primary" />
+        <!-- Reset button -->
+        <a href="@Url.Action("Index", "Manager")" class="btn btn-secondary">List all Managers</a>
+    </div>
+}
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Message"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<!-- List of Property Managers -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var manager in Model)
+        {
+            <tr>
+                <td>@manager.FirstName</td>
+                <td>@manager.LastName</td>
+                <td>@manager.Email</td>
+                <td>@manager.Phone</td>
+                <td>
+                    <a href="@Url.Action("Edit", "Manager", new { id = manager.UserId })" class="btn btn-warning">Edit</a>
+                    <a href="@Url.Action("Delete", "Manager", new { id = manager.UserId })" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Create Property Manager Button (stays visible even after search) -->
+<p>
+    <a href="@Url.Action("Create", "Manager")" class="btn btn-success">Create Property Manager</a>
+</p>
+
+
+<!-- Button to go back to the OwnersAdministratorsDashboard index -->
+<p>
+    <a href="@Url.Action("Index", "OwnersAdministratorsDashboard")" class="btn btn-primary">Back to Dashboard</a>
+</p>

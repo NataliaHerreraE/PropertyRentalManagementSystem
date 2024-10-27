@@ -1,0 +1,74 @@
+﻿@model PropertyRentalManagementSystem.Models.Apartment
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Apartment</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.AppartmentNumber)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AppartmentNumber)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Rooms)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Rooms)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Bathrooms)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Bathrooms)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.DateListed)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.DateListed)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.ImagePath)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.ImagePath)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Building.BuildingName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Building.BuildingName)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Status.StatusName)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.Status.StatusName)
+        </dd>
+
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.ApartmentId }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>

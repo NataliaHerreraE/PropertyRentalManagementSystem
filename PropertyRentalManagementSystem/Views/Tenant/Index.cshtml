@@ -1,0 +1,63 @@
+﻿@model IEnumerable<PropertyRentalManagementSystem.Models.User>
+
+<h2>Manage Tenants</h2>
+
+
+<!-- Search bar -->
+@using (Html.BeginForm("Index", "Tenant", FormMethod.Get))
+{
+    <div class="form-group">
+        @Html.TextBox("searchTerm", ViewBag.CurrentFilter as string, new { @class = "form-control", placeholder = "Search by First or Last Name" })
+        <input type="submit" value="Search" class="btn btn-primary" />
+        <!-- Reset button -->
+        <a href="@Url.Action("Index", "Tenant")" class="btn btn-secondary">List all Tenant</a>
+    </div>
+}
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["Message"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<!-- List of Tenants -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var tenant in Model)
+        {
+            <tr>
+                <td>@tenant.FirstName</td>
+                <td>@tenant.LastName</td>
+                <td>@tenant.Email</td>
+                <td>@tenant.Phone</td>
+                <td>
+                    <a href="@Url.Action("Edit", "Tenant", new { id = tenant.UserId })" class="btn btn-warning">Edit</a>
+                    <a href="@Url.Action("Delete", "Tenant", new { id = tenant.UserId })" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Button to go back to the OwnersAdministratorsDashboard index -->
+<p>
+    <a href="@Url.Action("Index", "OwnersAdministratorsDashboard")" class="btn btn-primary">Back to Dashboard</a>
+</p>
+

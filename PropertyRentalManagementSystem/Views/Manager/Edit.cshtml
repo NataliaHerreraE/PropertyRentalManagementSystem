@@ -1,0 +1,45 @@
+﻿@model PropertyRentalManagementSystem.Models.User
+
+<h2>Edit Property Manager</h2>
+<!-- Display validation summary -->
+@if (ViewBag.Message != null)
+{
+    <div class="alert alert-danger">
+        @ViewBag.Message
+    </div>
+}
+@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+@using (Html.BeginForm("Edit", "Manager", FormMethod.Post))
+{
+    @Html.AntiForgeryToken()
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.FirstName)
+        @Html.TextBoxFor(m => m.FirstName, new { @class = "form-control" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.LastName)
+        @Html.TextBoxFor(m => m.LastName, new { @class = "form-control" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Email)
+        @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(m => m.Phone)
+        @Html.TextBoxFor(m => m.Phone, new { @class = "form-control" })
+    </div>
+
+    <input type="hidden" name="UserId" value="@Model.UserId" />
+
+    <input type="submit" value="Save Changes" class="btn btn-primary" />
+}
+
+<!-- Button to go back to the ManagerView -->
+<p>
+    <a href="@Url.Action("Index", "Manager")" class="btn btn-secondary">Back to Manager List</a>
+</p>

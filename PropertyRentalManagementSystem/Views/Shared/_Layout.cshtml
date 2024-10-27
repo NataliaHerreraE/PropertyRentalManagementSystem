@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewBag.Title - Property Rental Management System</title>
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="~/Content/Site.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #0A213B;">
+        <div class="container">
+            <a class="navbar-brand" href="#">Property Rental Management System</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto" style="flex-direction: row; gap: 20px;">
+                    <li class="nav-item">@Html.ActionLink("Home", "Index", "Home", null, new { @class = "nav-link", style = "color: #FFC151; text-decoration: none;" })</li>
+                    <li class="nav-item">@Html.ActionLink("About Us", "AboutUs", "Home", null, new { @class = "nav-link", style = "color: #FFC151; text-decoration: none;" })</li>
+                    <li class="nav-item">@Html.ActionLink("Contact", "Contact", "Home", null, new { @class = "nav-link", style = "color: #FFC151; text-decoration: none;" })</li>
+                </ul>
+
+                <ul class="navbar-nav ml-auto" style="flex-direction: row; gap: 20px;">
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li class="nav-item">
+                            @using (Html.BeginForm("Logout", "Account", FormMethod.Post))
+                            {
+                                @Html.AntiForgeryToken() <!-- Include Anti-Forgery Token -->
+                                <button type="submit" class="nav-link btn btn-link" style="color: #FFC151; text-decoration: none;">Logout</button>
+                            }
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">@Html.ActionLink("Login", "Login", "Account", null, new { @class = "nav-link", style = "color: #FFC151; text-decoration: none;" })</li>
+                        <li class="nav-item">@Html.ActionLink("Sign Up", "SignUp", "Account", null, new { @class = "nav-link", style = "color: #FFC151; text-decoration: none;" })</li>
+                    }
+
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main container -->
+    <div class="container body-content">
+        @RenderBody()
+
+        <footer class="text-center" style="background-color: #0A213B; color: white;">
+            <p>&copy; @DateTime.Now.Year - Property Rental Management System - By Natalia Herrera</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script src="~/Scripts/bootstrap.min.js"></script>
+</body>
+</html>

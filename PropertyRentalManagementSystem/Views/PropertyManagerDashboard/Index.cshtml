@@ -1,0 +1,32 @@
+﻿<h2>Property Manager Dashboard</h2>
+
+<p>Select an option below to manage buildings, apartments, appointments, and messages.</p>
+
+<div class="dashboard-summary">
+    <p>Total Buildings: @ViewBag.BuildingCount</p>
+    <p>Total Apartments: @ViewBag.ApartmentCount</p>
+    <p>Upcoming Appointments: @ViewBag.UpcomingAppointmentsCount</p>
+    <p>New Messages: @ViewBag.UnreadMessagesCount</p>
+</div>
+
+<div class="dashboard-options">
+    <p>
+        <!-- Redirects to the Buildings management page -->
+        <a href="@Url.Action("Index", "Buildings")" class="btn btn-primary">Manage Buildings</a>
+    </p>
+
+    <p>
+        <!-- Redirects to the Apartments management page -->
+        <a href="@Url.Action("Index", "Apartments")" class="btn btn-primary">Manage Apartments</a>
+    </p>
+
+    <p>
+        <!-- Redirects to the Appointments management page -->
+        <a href="@Url.Action("Index", "Appointments")" class="btn btn-primary">Manage Appointments</a>
+    </p>
+
+    <p>
+        <!-- Redirects to the Messages management page -->
+        <a href="@Url.Action("Index", "Messages")" class="btn btn-primary">Manage Messages</a>
+    </p>
+</div>
