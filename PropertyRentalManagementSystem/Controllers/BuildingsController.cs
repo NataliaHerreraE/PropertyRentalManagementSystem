@@ -15,11 +15,33 @@ namespace PropertyRentalManagementSystem.Controllers
         private PropertyRentalManagementDBEntities db = new PropertyRentalManagementDBEntities();
 
         // GET: Buildings
-        public ActionResult Index()
+        public ActionResult Index(string searchTerm)
         {
-            var buildings = db.Buildings.Include(b => b.User);
+            // Check if UserId is present in the session
+            if (Session["UserId"] == null)
+            {
+                // Redirect to the login page if the session has expired or user is not logged in
+                return RedirectToAction("Login", "Account");
+            }
+
+            // Get the current user ID
+            int userId = (int)Session["UserId"];
+
+            // Fetch buildings associated with the current property manager
+            var buildings = db.Buildings
+                .Where(b => b.PropertyManagerId == userId);
+
+            // If there is a search term, filter by BuildingName or City
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                buildings = buildings
+                    .Where(b => b.BuildingName.Contains(searchTerm) || b.City.Contains(searchTerm));
+            }
+
             return View(buildings.ToList());
         }
+
+
 
         // GET: Buildings/Details/5
         public ActionResult Details(int? id)

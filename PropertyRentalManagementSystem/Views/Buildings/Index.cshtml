@@ -1,69 +1,51 @@
 ﻿@model IEnumerable<PropertyRentalManagementSystem.Models.Building>
 
-@{
-    ViewBag.Title = "Index";
+<h2>Manage Buildings</h2>
+
+
+<!-- Search bar -->
+@using (Html.BeginForm("Index", "Buildings", FormMethod.Get))
+{
+    <div class="form-group">
+        <input type="text" name="searchTerm" value="@Request.QueryString["searchTerm"]" class="form-control" placeholder="Search by Building Name or City" />
+        <button type="submit" class="btn btn-primary">Search</button>
+        <!-- Reset button -->
+        <a href="@Url.Action("Index", "Buildings")" class="btn btn-secondary">List All Buildings</a>
+    </div>
 }
-
-<h2>Index</h2>
-
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
+<!-- Table structure similar to your Managers/Tenants layout -->
 <table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.BuildingName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Address)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.City)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.PostalCode)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.DateListed)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.ImagePath)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.User.FirstName)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.BuildingName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Address)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.City)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.PostalCode)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.DateListed)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.ImagePath)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.User.FirstName)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.BuildingId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.BuildingId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.BuildingId })
-        </td>
-    </tr>
-}
-
+    <thead>
+        <tr>
+            <th>Building Name</th>
+            <th>City</th>
+            <th>Date Listed</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var building in Model)
+        {
+            <tr>
+                <td>@building.BuildingName</td>
+                <td>@building.City</td>
+                <td>@building.DateListed.ToString("yyyy-MM-dd")</td> <!-- Format date here -->
+                <td>
+                    <a href="@Url.Action("Details", "Buildings", new { id = building.BuildingId })" class="btn btn-info">Details</a>
+                    <a href="@Url.Action("Edit", "Buildings", new { id = building.BuildingId })" class="btn btn-warning">Edit</a>
+                    <a href="@Url.Action("Delete", "Buildings", new { id = building.BuildingId })" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
 </table>
+
+<!-- Button to create a new building -->
+<p>
+    <a href="@Url.Action("Create", "Buildings")" class="btn btn-success">Create New Building</a>
+</p>
+
+<!-- Button to go back to the dashboard -->
+<p>
+    <a href="@Url.Action("Index", "PropertyManagerDashboard")" class="btn btn-primary">Back to Dashboard</a>
+</p>

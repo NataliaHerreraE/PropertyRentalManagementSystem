@@ -1,32 +1,57 @@
-﻿<h2>Property Manager Dashboard</h2>
+﻿@{
+    ViewBag.Title = "Property Manager Dashboard";
+}
 
-<p>Select an option below to manage buildings, apartments, appointments, and messages.</p>
+<h2 class="dashboard-title">Property Manager Dashboard</h2>
 
-<div class="dashboard-summary">
-    <p>Total Buildings: @ViewBag.BuildingCount</p>
-    <p>Total Apartments: @ViewBag.ApartmentCount</p>
-    <p>Upcoming Appointments: @ViewBag.UpcomingAppointmentsCount</p>
-    <p>New Messages: @ViewBag.UnreadMessagesCount</p>
-</div>
+<p class="welcome-text">
+    WELCOME @ViewBag.UserName
+</p>
 
-<div class="dashboard-options">
-    <p>
-        <!-- Redirects to the Buildings management page -->
-        <a href="@Url.Action("Index", "Buildings")" class="btn btn-primary">Manage Buildings</a>
-    </p>
+<p class="instruction-text">
+    Select an option below to manage buildings, apartments, appointments, and messages.
+</p>
 
-    <p>
-        <!-- Redirects to the Apartments management page -->
-        <a href="@Url.Action("Index", "Apartments")" class="btn btn-primary">Manage Apartments</a>
-    </p>
+<div class="container">
+    <div class="row text-center mt-4">
+        <!-- Total Buildings -->
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>Total Buildings</h3>
+                <h2>@ViewBag.BuildingCount</h2>
 
-    <p>
-        <!-- Redirects to the Appointments management page -->
-        <a href="@Url.Action("Index", "Appointments")" class="btn btn-primary">Manage Appointments</a>
-    </p>
+            </div>
+            <a href="@Url.Action("Index", "Buildings")" class="btn btn-dark mt-2">Manage Buildings</a>
+        </div>
 
-    <p>
-        <!-- Redirects to the Messages management page -->
-        <a href="@Url.Action("Index", "Messages")" class="btn btn-primary">Manage Messages</a>
-    </p>
+        <!-- Total Apartments -->
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>Total Apartments</h3>
+                <h2>@ViewBag.ApartmentCount</h2>
+
+            </div>
+            <a href="@Url.Action("Index", "Apartments")" class="btn btn-dark mt-2">Manage Apartments</a>
+        </div>
+
+        <!-- Upcoming Appointments -->
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>Upcoming Appointments</h3>
+                <h2>@ViewBag.UpcomingAppointmentsCount</h2>
+
+            </div>
+            <a href="@Url.Action("Index", "Appointments")" class="btn btn-dark mt-2">Manage Appointments</a>
+        </div>
+
+        <!-- New Messages -->
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>New Messages</h3>
+                <h2>@ViewBag.UnreadMessagesCount</h2>
+
+            </div>
+            <a href="@Url.Action("Index", "Messages")" class="btn btn-dark mt-2">Manage Messages</a>
+        </div>
+    </div>
 </div>

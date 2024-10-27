@@ -47,3 +47,287 @@ body {
 footer {
     padding: 20px 0;
 }
+
+.dashboard-title {
+    font-size: 2em;
+    color: #FFC151;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.welcome-text, .instruction-text {
+    text-align: center;
+}
+
+.welcome-text {
+    font-size: 1.2em;
+    color: #FFFFFF;
+}
+
+.instruction-text {
+    color: #FFFFFF;
+    margin-bottom: 20px;
+}
+
+/* Dashboard container for layout */
+.container {
+    margin-top: 20px;
+}
+
+.dashboard-card {
+    background-color: #FFC151;
+    color: #0A213B;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    width: 100%;
+    min-height: 200px; /* Ensures all cards are the same height */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Space evenly between header, count, and button */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card h3 {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #FFFFFF; /* White color for the title */
+}
+
+.dashboard-card h2 {
+    font-size: 2em;
+    margin: 10px 0;
+    color: #0A213B; /* Blue color for the number */
+}
+
+.btn-dark {
+    background-color: #1C3C5A;
+    color: #FFC151;
+    border: none;
+    padding: 10px 15px;
+    font-weight: bold;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+    width: 100%; /* Full width inside the card */
+}
+
+.btn-dark:hover {
+    background-color: #294E72; /* Slightly lighter blue on hover */
+}
+
+.dashboard-title {
+    font-size: 2em;
+    color: #FFC151;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.welcome-text, .instruction-text {
+    text-align: center;
+}
+
+.welcome-text {
+    font-size: 1.2em;
+    color: #FFFFFF;
+}
+
+.instruction-text {
+    color: #FFFFFF;
+    margin-bottom: 20px;
+}
+
+/* Dashboard container for layout */
+.container {
+    margin-top: 20px;
+}
+
+.dashboard-card {
+    background-color: #FFC151;
+    color: #0A213B;
+    padding: 20px;
+    text-align: center;
+    border-radius: 8px;
+    width: 100%;
+    min-height: 200px; /* Ensures all cards are the same height */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Space evenly between header, count, and button */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card h3 {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #FFFFFF; /* White color for the title */
+}
+
+.dashboard-card h2 {
+    font-size: 2em;
+    margin: 10px 0;
+    color: #0A213B; /* Blue color for the number */
+}
+
+.btn-dark {
+    background-color: #1C3C5A;
+    color: #FFC151;
+    border: none;
+    padding: 10px 15px;
+    font-weight: bold;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+    width: 100%; /* Full width inside the card */
+}
+
+.btn-dark:hover {
+    background-color: #294E72; /* Slightly lighter blue on hover */
+}
+
+
+/* Card styling */
+.dashboard-card {
+    background-color: #FFC151;
+    color: #0A213B;
+    padding: 20px;
+    text-align: center;
+    border-radius: 10px;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin-bottom: 20px;
+}
+
+    .dashboard-card h3 {
+        font-size: 1.5em;
+        color: #0A213B;
+    }
+
+    .dashboard-card p {
+        font-size: 1.1em;
+        color: #1C3C5A;
+    }
+
+/* Button styling */
+.btn-primary {
+    background-color: #0A213B;
+    color: #FFC151;
+    font-weight: bold;
+    border: none;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+    .btn-primary:hover {
+        background-color: #1C3C5A;
+        color: #FFD782;
+    }
+
+.btn-secondary {
+    background-color: #1C3C5A;
+    color: #FFC151;
+    font-weight: bold;
+    border: none;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+    .btn-secondary:hover {
+        background-color: #0A213B;
+        color: #FFD782;
+    }
+
+.btn-danger {
+    background-color: #D9534F;
+    color: #FFFFFF;
+    font-weight: bold;
+    border: none;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+    .btn-danger:hover {
+        background-color: #C9302C;
+        color: #FFFFFF;
+    }
+
+.btn-success {
+    background-color: #5CB85C;
+    color: #FFFFFF;
+    font-weight: bold;
+    border: none;
+    padding: 10px 15px;
+    text-decoration: none;
+    border-radius: 5px;
+}
+
+    .btn-success:hover {
+        background-color: #4CAE4C;
+        color: #FFFFFF;
+    }
+
+/* Button group for alignment */
+.button-group {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Space between buttons */
+}
+
+
+
+/* Styling for the details card */
+.building-details-card {
+    background-color: rgba(10, 33, 59, 0.5); /* Semi-transparent dark blue */
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 600px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    color: white;
+    text-align: center;
+}
+
+/* Image styling */
+.building-image-container {
+    width: 100%;
+    max-height: 500px;
+    overflow: hidden;
+    object-fit: cover; /* Ensures the image covers the area without distortion */
+    border-radius: 10px 10px 0 0;
+    margin-bottom: 20px; /* Adds space between the image and the rest of the content */
+}
+
+.building-image {
+    width: 100%;
+    height: auto;
+    border-radius: 10px 10px 0 0;
+    object-fit: cover;
+}
+
+/* Building info styling */
+.building-info {
+    padding: 15px;
+    text-align: left;
+}
+
+    .building-info h3 {
+        color: #FFC151; /* Yellow color for the building name */
+        text-align: center;
+    }
+
+    .building-info p {
+        margin: 5px 0;
+        font-size: 1em;
+    }
+
+/* Actions styling */
+.details-actions {
+    margin-top: 15px;
+    text-align: center;
+}
+
+    .details-actions .btn {
+        margin: 5px;
+    }

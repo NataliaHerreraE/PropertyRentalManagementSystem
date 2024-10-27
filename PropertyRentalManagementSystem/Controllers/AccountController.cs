@@ -49,7 +49,9 @@ namespace PropertyRentalManagementSystem.Controllers
                     }
                     else
                     {
-                        ModelState.AddModelError("", "Access Denied. You do not have the required role.");
+                        // Clear session if role is not recognized
+                        Session.Clear();
+                        ModelState.AddModelError("", "Access Denied. Invalid role assigned.");
                     }
                 }
                 else
@@ -60,6 +62,7 @@ namespace PropertyRentalManagementSystem.Controllers
 
             return View(model);
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]  // This validates the token sent by the form

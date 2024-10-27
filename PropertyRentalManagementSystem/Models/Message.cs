@@ -21,6 +21,7 @@ namespace PropertyRentalManagementSystem.Models
         public string Message1 { get; set; }
         public System.DateTime DateSent { get; set; }
         public int TypeId { get; set; }
+        public bool IsRead { get; set; }
     
         public virtual Apartment Apartment { get; set; }
         public virtual User User { get; set; }

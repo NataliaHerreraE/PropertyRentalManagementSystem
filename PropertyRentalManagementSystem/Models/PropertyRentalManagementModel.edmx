@@ -52,6 +52,7 @@
           <Property Name="Message" Type="nvarchar(max)" Nullable="false" />
           <Property Name="DateSent" Type="datetime" Nullable="false" />
           <Property Name="TypeId" Type="int" Nullable="false" />
+          <Property Name="IsRead" Type="bit" Nullable="false" />
         </EntityType>
         <EntityType Name="Payments">
           <Key>
@@ -482,6 +483,7 @@
           <NavigationProperty Name="User" Relationship="Self.FK_Messages_FromUsers" FromRole="Messages" ToRole="Users" />
           <NavigationProperty Name="User1" Relationship="Self.FK_Messages_ToUsers" FromRole="Messages" ToRole="Users" />
           <NavigationProperty Name="TypeMessage" Relationship="Self.FK_Messages_TypeMessage" FromRole="Messages" ToRole="TypeMessage" />
+          <Property Name="IsRead" Type="Boolean" Nullable="false" />
         </EntityType>
         <EntityType Name="Payment">
           <Key>
@@ -917,6 +919,7 @@
           <EntitySetMapping Name="Messages">
             <EntityTypeMapping TypeName="PropertyRentalManagementDBModel.Message">
               <MappingFragment StoreEntitySet="Messages">
+                <ScalarProperty Name="IsRead" ColumnName="IsRead" />
                 <ScalarProperty Name="MessageId" ColumnName="MessageId" />
                 <ScalarProperty Name="FromUserId" ColumnName="FromUserId" />
                 <ScalarProperty Name="ToUserId" ColumnName="ToUserId" />
