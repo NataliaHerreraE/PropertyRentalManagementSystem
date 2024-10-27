@@ -3,9 +3,16 @@
 <h2 class="dashboard-title">Building Details</h2>
 
 <div class="building-details-card">
-    <!-- Display Image -->
+    <!-- Display Image (only if there is one) -->
     <div class="building-image-container">
-        <img src="~/Content/@Model.ImagePath" alt="Building Image" class="building-image" />
+        @if (!string.IsNullOrEmpty(Model.ImagePath))
+        {
+            <img src="~/Content/@Model.ImagePath" alt="Building Image" class="building-image" />
+        }
+        else
+        {
+            <p>No image available</p>
+        }
     </div>
 
     <!-- Display Building Details -->
@@ -17,11 +24,9 @@
         <p><strong>Date Listed:</strong> @Model.DateListed.ToString("yyyy-MM-dd")</p>
     </div>
 
-    <!-- Edit and Back Links -->
+    <!-- Back and Edit Links -->
     <div class="details-actions">
         @Html.ActionLink("Edit", "Edit", new { id = Model.BuildingId }, new { @class = "btn btn-warning" })
-
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
     </div>
 </div>
-
-@Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
