@@ -13,6 +13,14 @@ namespace PropertyRentalManagementSystem.Controllers
         // GET: Tenant/Index
         public ActionResult Index(string searchTerm)
         {
+
+            if (Session["UserId"] == null)
+            {
+
+                return RedirectToAction("Login", "Account");
+            }
+            int userId = (int)Session["UserId"];
+
             var tenants = db.Users.Where(u => u.Role.RoleName == "Tenant");
 
             if (!string.IsNullOrEmpty(searchTerm))

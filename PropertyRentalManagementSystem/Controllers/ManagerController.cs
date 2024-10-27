@@ -16,6 +16,14 @@ namespace PropertyRentalManagementSystem.Controllers
         // GET: Manager/Index
         public ActionResult Index(string searchTerm)
         {
+
+            if (Session["UserId"] == null)
+            {
+
+                return RedirectToAction("Login", "Account");
+            }
+            int userId = (int)Session["UserId"];
+
             var managers = db.Users.Where(u => u.Role.RoleName == "Property Manager");
 
             if (!string.IsNullOrEmpty(searchTerm))

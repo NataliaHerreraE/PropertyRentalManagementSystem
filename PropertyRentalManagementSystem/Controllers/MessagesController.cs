@@ -10,6 +10,7 @@ using PropertyRentalManagementSystem.Models;
 
 namespace PropertyRentalManagementSystem.Controllers
 {
+    [Authorize(Roles = "Property Manager")]
     public class MessagesController : Controller
     {
         private PropertyRentalManagementDBEntities db = new PropertyRentalManagementDBEntities();

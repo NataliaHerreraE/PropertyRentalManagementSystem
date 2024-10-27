@@ -18,19 +18,14 @@ namespace PropertyRentalManagementSystem.Controllers
         // GET: OwnersAdministratorsDashboard/Index
         public ActionResult Index()
         {
-            /*  // Check if the user has the required role (Property Owner or Administrator)
-              if (Session["RoleName"] != null && (Session["RoleName"].ToString() == "Property Owner" || Session["RoleName"].ToString() == "Administrator"))
-              {
-                  Console.WriteLine("User authorized. Role: " + Session["RoleName"]);
-                  return View();
-              }
-              else
-              {
-                  Console.WriteLine("User not authorized or session expired. Redirecting to login.");
-                  return RedirectToAction("Login", "Account");
-              }
-  */
-            // Check if the user has the required role (Property Owner or Administrator)
+
+            if (Session["UserId"] == null)
+            {
+
+                return RedirectToAction("Login", "Account");
+            }
+            int userId = (int)Session["UserId"];
+
             if (Session["RoleName"] != null &&
                 (Session["RoleName"].ToString() == "Property Owner" ||
                  Session["RoleName"].ToString() == "Administrator"))
