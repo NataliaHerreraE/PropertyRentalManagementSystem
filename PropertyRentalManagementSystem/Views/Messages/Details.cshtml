@@ -1,66 +1,53 @@
 ﻿@model PropertyRentalManagementSystem.Models.Message
 
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Message Details";
 }
 
-<h2>Details</h2>
+<h2>Message Details</h2>
 
-<div>
-    <h4>Message</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.Message1)
-        </dt>
+<div class="card mt-4" style="background-color: white; border: 1px solid #ddd; padding: 20px;">
+    <div class="card-header" style="background-color: #f8f9fa; padding: 10px;">
+        <h4>@Model.TypeMessage.TypeName</h4> <!-- Display the type of message here -->
+    </div>
 
-        <dd>
-            @Html.DisplayFor(model => model.Message1)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.DateSent)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.DateSent)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.Apartment.AppartmentNumber)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.Apartment.AppartmentNumber)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.User.FirstName)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.User.FirstName)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.User1.FirstName)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.User1.FirstName)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.TypeMessage.TypeName)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.TypeMessage.TypeName)
-        </dd>
-
-    </dl>
+    <div class="card-body" style="padding: 20px;">
+        <table class="table table-borderless">
+            <tbody>
+                <tr>
+                    <th style="width: 20%;">From:</th>
+                    <td>@Model.User.FirstName @Model.User.LastName</td>
+                </tr>
+                <tr>
+                    <th>To:</th>
+                    <td>@Model.User1.FirstName @Model.User1.LastName</td>
+                </tr>
+                <tr>
+                    <th>Date Sent:</th>
+                    <td>@Model.DateSent.ToString("yyyy-MM-dd HH:mm")</td>
+                </tr>
+                <tr>
+                    <th>Building:</th>
+                    <td>@Model.Apartment.Building.BuildingName</td> <!-- Add building name here -->
+                </tr>
+                <tr>
+                    <th>Apartment:</th>
+                    <td>@Model.Apartment.AppartmentNumber</td>
+                </tr>
+                <tr>
+                    <th>Type:</th>
+                    <td>@Model.TypeMessage.TypeName</td>
+                </tr>
+                <tr>
+                    <th>Message:</th>
+                    <td>@Model.Message1</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.MessageId }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>
+
+<div class="card-footer">
+    <a href="@Url.Action("Create", "Messages", new { toUserId = Model.FromUserId })" class="btn btn-primary">Reply</a>
+    <a href="@Url.Action("Index", "Messages")" class="btn btn-primary">Back to List</a>
+</div>

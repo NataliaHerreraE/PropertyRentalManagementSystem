@@ -27,29 +27,48 @@
     </div>
 </div>
 
-<!-- Search fields for Sender and Receiver with Centered Search Button -->
+<!-- Search Form -->
 <div class="container mt-4">
-    <div class="row align-items-end">
-        <!-- Sender Search Field -->
-        <div class="col-md-5">
-            <label for="senderSearch">Sender:</label>
-            <input type="text" id="senderSearch" class="form-control" placeholder="Search by sender's name..." />
+    @using (Html.BeginForm("Index", "Messages", FormMethod.Get))
+    {
+        <div class="row align-items-end">
+            <!-- Sender Search Field -->
+            <div class="col-md-3">
+                <label for="fromUserSearch">From:</label>
+                <input type="text" name="fromUserSearch" class="form-control" placeholder="Search by sender's name..." />
+            </div>
+
+            <!-- Receiver Search Field -->
+            <div class="col-md-3">
+                <label for="toUserSearch">To:</label>
+                <input type="text" name="toUserSearch" class="form-control" placeholder="Search by receiver's name..." />
+            </div>
+
+            <!-- Building Dropdown -->
+            <div class="col-md-3">
+                <label for="buildingId">Building:</label>
+                @Html.DropDownList("buildingId", ViewBag.BuildingId as SelectList, "Select Building", new { @class = "form-control" })
+            </div>
+
+            <!-- Apartment Dropdown -->
+            <div class="col-md-3">
+                <label for="apartmentId">Apartment:</label>
+                @Html.DropDownList("apartmentId", ViewBag.ApartmentId as SelectList, "Select Apartment", new { @class = "form-control" })
+            </div>
         </div>
 
-
-        <!-- Receiver Search Field -->
-        <div class="col-md-5">
-            <label for="receiverSearch">Receiver:</label>
-            <input type="text" id="receiverSearch" class="form-control" placeholder="Search by receiver's name..." />
+        <!-- Search Button -->
+        <div class="row mt-3">
+            <div class="col-md-12 text-center">
+                <button type="submit" class="btn btn-primary">Search</button>
+                <a href="@Url.Action("Index", "Messages")" class="btn btn-secondary">List All</a> <!-- List All Button -->
+            </div>
         </div>
-    </div>
-
-    <!-- Search Button -->
-    <div class="col-md-2 text-center">
-        <button id="searchButton" class="btn btn-primary mt-2">Search</button>
-    </div>
-    <br />
+    }
 </div>
+
+<br />
+
 <!-- All Messages Table -->
 <table class="table table-striped">
     <thead>
@@ -57,12 +76,12 @@
             <th>Date Sent</th>
             <th>From</th>
             <th>To</th>
+            <th>Building</th>
             <th>Apartment</th>
             <th>Message</th>
-
             <th>Type</th>
             <th>Is Read</th>
-            <th>Actions</th> <!-- New Actions column -->
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody>
@@ -72,30 +91,29 @@
                 <td>@message.DateSent.ToString("yyyy-MM-dd HH:mm")</td>
                 <td>@message.User.FirstName @message.User.LastName</td>
                 <td>@message.User1.FirstName @message.User1.LastName</td>
+                <td>@message.Apartment.Building.BuildingName</td> <!-- Building Name -->
                 <td>@message.Apartment.AppartmentNumber</td>
-                <td>@message.Message1</td> <!-- Use Message1 here -->
-
+                <td>@message.Message1</td>
                 <td>@message.TypeMessage.TypeName</td>
                 <td>@(message.IsRead ? "Yes" : "No")</td>
                 <td>
                     <!-- View Message Button -->
-                    <a href="@Url.Action("ViewMessage", "Messages", new { id = message.MessageId })" class="btn btn-primary btn-sm">View</a>
+                    <a href="@Url.Action("Details", "Messages", new { id = message.MessageId })" class="btn btn-info">View Message</a>
 
-                    <!-- Delete Button with a form for safety -->
-                    <form action="@Url.Action("Delete", "Messages", new { id = message.MessageId })" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this message?');">Delete</button>
-                    </form>
+                    <!-- Updated Delete Button -->
+                    <a href="@Url.Action("Delete", "Messages", new { id = message.MessageId })" class="btn btn-danger">Delete</a>
                 </td>
+
             </tr>
         }
     </tbody>
 </table>
 
-
-<!-- Button to create a new apartment -->
+<!-- Button to create a new message -->
 <p>
-    <a href="@Url.Action("Create", "Message")" class="btn btn-success">Send New Message</a>
+    <a href="@Url.Action("Create", "Messages")" class="btn btn-success">Send New Message</a>
 </p>
+
 
 <!-- Button to go back to the dashboard -->
 <p>
