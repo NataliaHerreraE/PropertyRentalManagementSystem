@@ -20,11 +20,16 @@ namespace PropertyRentalManagementSystem.Controllers
         public ActionResult Index(string appartmentNumberStatus, string rooms, string bathrooms, string price)
         {
             int userId = (int)Session["UserId"];
-            var apartments = db.Apartments.Include(a => a.Building).Include(a => a.Status);
 
+            // Retrieve only the apartments related to buildings managed by the current user
+            var apartments = db.Apartments
+                .Include(a => a.Building)
+                .Include(a => a.Status)
+                .Where(a => a.Building.PropertyManagerId == userId); // Filtering by manager's buildings
+
+            // Count available and rented apartments for summary cards
             ViewBag.AvailableApartmentCount = apartments.Count(a => a.Status.StatusName == "Available");
             ViewBag.RentedApartmentCount = apartments.Count(a => a.Status.StatusName == "Rented");
-
 
             // Filter by AppartmentNumber or Status if search term is provided
             if (!string.IsNullOrEmpty(appartmentNumberStatus))
@@ -76,6 +81,7 @@ namespace PropertyRentalManagementSystem.Controllers
             return View(apartments.ToList());
         }
 
+
         // GET: Apartments/Details/5
         public ActionResult Details(int? id)
         {
@@ -94,12 +100,13 @@ namespace PropertyRentalManagementSystem.Controllers
         // GET: Apartments/Create
         public ActionResult Create()
         {
+            int userId = (int)Session["UserId"];
             // Only show 'Available' and 'Rented' statuses in the dropdown
             var statusList = db.Status
                                .Where(s => s.StatusName == "Available" || s.StatusName == "Rented")
                                .ToList();
-            ViewBag.StatusId = new SelectList(statusList, "StatusId", "StatusName");
-            ViewBag.BuildingId = new SelectList(db.Buildings, "BuildingId", "BuildingName");
+            ViewBag.BuildingId = new SelectList(db.Buildings.Where(b => b.PropertyManagerId == userId), "BuildingId", "BuildingName");
+            ViewBag.StatusId = new SelectList(db.Status, "StatusId", "StatusName");
 
             return View();
         }
@@ -129,6 +136,16 @@ namespace PropertyRentalManagementSystem.Controllers
 
                 if (ModelState.IsValid)
                 {
+                    int userId = (int)Session["UserId"];
+
+                    // Check that the selected building is managed by the current user
+                    var building = db.Buildings.FirstOrDefault(b => b.BuildingId == apartment.BuildingId && b.PropertyManagerId == userId);
+                    if (building == null)
+                    {
+                        TempData["ErrorMessage"] = "You are not authorized to create an apartment for this building.";
+                        return RedirectToAction("Index");
+                    }
+
                     // Image upload handling
                     if (imageUpload != null && imageUpload.ContentLength > 0)
                     {
@@ -167,10 +184,15 @@ namespace PropertyRentalManagementSystem.Controllers
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
 
-            var apartment = db.Apartments
-                              .Include(a => a.Status)
-                              .Include(a => a.Building)
-                              .FirstOrDefault(a => a.ApartmentId == id);
+            /*  var apartment = db.Apartments
+                                .Include(a => a.Status)
+                                .Include(a => a.Building)
+                                .FirstOrDefault(a => a.ApartmentId == id);*/
+
+            int userId = (int)Session["UserId"];
+            var apartment = db.Apartments.Include(a => a.Building)
+                                         .FirstOrDefault(a => a.ApartmentId == id && a.Building.PropertyManagerId == userId);
+
 
             if (apartment == null)
             {
@@ -197,6 +219,8 @@ namespace PropertyRentalManagementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(Apartment apartment, HttpPostedFileBase imageUpload)
         {
+            int userId = (int)Session["UserId"]; // Declare userId at the beginning
+
             try
             {
                 // Check if the date is in the future
@@ -207,7 +231,10 @@ namespace PropertyRentalManagementSystem.Controllers
 
                 if (ModelState.IsValid)
                 {
-                    var apartmentInDb = db.Apartments.Find(apartment.ApartmentId);
+                    // Check if the apartment exists and is managed by the current user
+                    var apartmentInDb = db.Apartments.Include(a => a.Building)
+                                                     .FirstOrDefault(a => a.ApartmentId == apartment.ApartmentId && a.Building.PropertyManagerId == userId);
+
                     if (apartmentInDb != null)
                     {
                         apartmentInDb.AppartmentNumber = apartment.AppartmentNumber;
@@ -242,13 +269,14 @@ namespace PropertyRentalManagementSystem.Controllers
                 TempData["ErrorMessage"] = "An error occurred while updating the apartment. " + ex.Message;
             }
 
-            // Reload dropdowns for Status and Building in case of an error
+            // Load the dropdowns and return the view if validation fails
             var statusList = db.Status.Where(s => s.StatusName == "Available" || s.StatusName == "Rented").ToList();
             ViewBag.StatusId = new SelectList(statusList, "StatusId", "StatusName", apartment.StatusId);
-            ViewBag.BuildingId = new SelectList(db.Buildings, "BuildingId", "BuildingName", apartment.BuildingId);
+            ViewBag.BuildingId = new SelectList(db.Buildings.Where(b => b.PropertyManagerId == userId), "BuildingId", "BuildingName", apartment.BuildingId);
 
             return View(apartment);
         }
+
 
 
 

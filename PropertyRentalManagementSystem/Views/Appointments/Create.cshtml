@@ -1,59 +1,77 @@
 ﻿@model PropertyRentalManagementSystem.Models.Appointment
 
 @{
-    ViewBag.Title = "Create";
+    ViewBag.Title = "Create Appointment";
 }
 
-<h2>Create</h2>
+<h2 class="dashboard-title">Create Appointment</h2>
 
-@using (Html.BeginForm()) 
+@if (TempData["ErrorMessage"] != null)
 {
-    @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>Appointment</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        <div class="form-group">
-            @Html.LabelFor(model => model.ApartmentId, "ApartmentId", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("ApartmentId", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.ApartmentId, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.TenantId, "TenantId", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("TenantId", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.TenantId, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.Date, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.Date, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.Date, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.StatusId, "StatusId", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("StatusId", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.StatusId, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Create" class="btn btn-default" />
-            </div>
-        </div>
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
     </div>
 }
 
-<div>
-    @Html.ActionLink("Back to List", "Index")
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+<div class="appointment-details-card">
+    <h4>Appointment Details</h4>
+    <hr />
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+    <!-- Apartment Dropdown -->
+    <div class="form-group">
+        @Html.LabelFor(model => model.ApartmentId, "Apartment", htmlAttributes: new { @class = "control-label" })
+        <div>
+            @Html.DropDownList("ApartmentId", (SelectList)ViewBag.ApartmentId, "Select Apartment", new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.ApartmentId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <!-- Tenant Dropdown -->
+    <div class="form-group">
+        @Html.LabelFor(model => model.TenantId, "Tenant", htmlAttributes: new { @class = "control-label" })
+        <div>
+            @Html.DropDownList("TenantId", (SelectList)ViewBag.TenantId, "Select Tenant", new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.TenantId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <!-- Date and Time -->
+    <div class="form-group">
+        @Html.LabelFor(model => model.Date, "Appointment Date and Time", htmlAttributes: new { @class = "control-label" })
+        <div>
+            @Html.TextBoxFor(model => model.Date, "{0:yyyy-MM-ddTHH:mm}", new { @class = "form-control", type = "datetime-local" })
+            @Html.ValidationMessageFor(model => model.Date, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+
+    <!-- Status Dropdown -->
+    <div class="form-group">
+        @Html.LabelFor(model => model.StatusId, "Status", htmlAttributes: new { @class = "control-label" })
+        <div>
+            @Html.DropDownList("StatusId", (SelectList)ViewBag.StatusId, "Select Status", new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.StatusId, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <!-- Submit Button -->
+    <div class="form-group">
+        <div>
+            <input type="submit" value="Create Appointment" class="btn btn-success" />
+            @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary ml-2" })
+        </div>
+    </div>
 </div>
+}

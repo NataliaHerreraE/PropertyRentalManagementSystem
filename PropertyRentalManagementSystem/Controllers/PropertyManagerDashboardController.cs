@@ -39,17 +39,19 @@ namespace PropertyRentalManagementSystem.Controllers
 
             var apartmentCount = db.Apartments.Count(a => a.Building.PropertyManagerId == userId);
 
-            var upcomingAppointmentsCount = db.Appointments
-                .Count(a => a.Apartment.Building.PropertyManagerId == userId && a.Date > DateTime.Now);
+            var upcomingPendingAppointmentsCount = db.Appointments
+                .Count(a => a.Apartment.Building.PropertyManagerId == userId && a.Date > DateTime.Now && a.Status.StatusName == "Pending");
 
-     
+            ViewBag.UpcomingAppointmentsCount = upcomingPendingAppointmentsCount;
+
+
             var unreadMessagesCount = db.Messages
                 .Count(m => m.ToUserId == userId && !m.IsRead);
 
             
             ViewBag.BuildingCount = buildingCount;
             ViewBag.ApartmentCount = apartmentCount;
-            ViewBag.UpcomingAppointmentsCount = upcomingAppointmentsCount;
+            ViewBag.UpcomingAppointmentsCount = upcomingPendingAppointmentsCount;
             ViewBag.UnreadMessagesCount = unreadMessagesCount;
 
             return View();

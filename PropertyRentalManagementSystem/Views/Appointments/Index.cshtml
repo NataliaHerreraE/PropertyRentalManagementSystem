@@ -1,51 +1,94 @@
 ﻿@model IEnumerable<PropertyRentalManagementSystem.Models.Appointment>
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Manage Appointments";
+}
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
 }
 
-<h2>Index</h2>
-
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Date)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Apartment.AppartmentNumber)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Status.StatusName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.User.FirstName)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Date)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Apartment.AppartmentNumber)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Status.StatusName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.User.FirstName)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.AppointmentId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.AppointmentId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.AppointmentId })
-        </td>
-    </tr>
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
 }
 
-</table>
+<h2 class="dashboard-title">Manage Appointments</h2>
+
+<!-- Appointment Summary Cards -->
+<div class="container">
+    <div class="row text-center mt-4">
+        <!-- Pending Appointments -->
+        <div class="col-md-4 mb-4">
+            <div class="dashboard-card">
+                <h3>Pending Appointments</h3>
+                <h2>@ViewBag.PendingCount</h2>
+            </div>
+        </div>
+
+        <!-- Complete Appointments -->
+        <div class="col-md-4 mb-4">
+            <div class="dashboard-card">
+                <h3>Complete Appointments</h3>
+                <h2>@ViewBag.CompleteCount</h2>
+            </div>
+        </div>
+
+        <!-- Cancelled Appointments -->
+        <div class="col-md-4 mb-4">
+            <div class="dashboard-card">
+                <h3>Cancelled Appointments</h3>
+                <h2>@ViewBag.CancelledCount</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Create Appointment Button -->
+<div class="text-right mb-3">
+    @Html.ActionLink("Create Appointment", "Create", null, new { @class="btn btn-success" })
+</div>
+
+<!-- Appointment List -->
+<div class="appointment-list mt-4">
+    <h3>List of Appointments</h3>
+    <hr />
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Appointment Date</th>
+                <th>Tenant Full Name</th>
+                <th>Building</th>
+                <th>Apartment</th>
+                <th>Status</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var appointment in Model)
+            {
+                <tr>
+                    <td>@appointment.Date.ToString("yyyy-MM-dd")</td>
+                    <td>@appointment.User.FirstName @appointment.User.LastName</td> <!-- Full name of tenant -->
+                    <td>@appointment.Apartment.Building.BuildingName</td> <!-- Building name -->
+                    <td>@appointment.Apartment.AppartmentNumber</td> <!-- Apartment number -->
+                    <td>@appointment.Status.StatusName</td> <!-- Status -->
+                    <td class="text-center">
+                        @Html.ActionLink("Details", "Details", new { id = appointment.AppointmentId }, new { @class = "btn btn-info btn-sm" })
+                        @Html.ActionLink("Edit", "Edit", new { id = appointment.AppointmentId }, new { @class = "btn btn-warning btn-sm" })
+                        @Html.ActionLink("Delete", "Delete", new { id = appointment.AppointmentId }, new { @class = "btn btn-danger btn-sm" })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Button to go back to the dashboard -->
+    <p>
+        <a href="@Url.Action("Index", "PropertyManagerDashboard")" class="btn btn-primary">Back to Dashboard</a>
+    </p>
+</div>
