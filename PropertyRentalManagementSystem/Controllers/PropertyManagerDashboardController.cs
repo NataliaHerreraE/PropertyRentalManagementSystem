@@ -22,7 +22,8 @@ namespace PropertyRentalManagementSystem.Controllers
             }
             int userId = (int)Session["UserId"];
 
-     
+
+
             var user = db.Users.FirstOrDefault(u => u.UserId == userId);
             if (user != null)
             {
@@ -45,18 +46,38 @@ namespace PropertyRentalManagementSystem.Controllers
             ViewBag.UpcomingAppointmentsCount = upcomingPendingAppointmentsCount;
 
 
-            var unreadMessagesCount = db.Messages
-                .Count(m => m.ToUserId == userId && !m.IsRead);
+            // Fetch unread messages count
+            int unreadMessagesCount = db.Messages
+                .Count(m => (m.ToUserId == userId || m.FromUserId == userId) && m.IsRead == false);
 
-            
+            // Set the counts to ViewBag for display on the dashboard
             ViewBag.BuildingCount = buildingCount;
             ViewBag.ApartmentCount = apartmentCount;
             ViewBag.UpcomingAppointmentsCount = upcomingPendingAppointmentsCount;
             ViewBag.UnreadMessagesCount = unreadMessagesCount;
 
+
             return View();
 
         }
+
+        public JsonResult GetUnreadMessagesCount()
+        {
+            if (Session["UserId"] == null)
+            {
+                return Json(new { count = 0 }, JsonRequestBehavior.AllowGet);
+            }
+
+            int userId = (int)Session["UserId"];
+
+            // Count unread messages where the user is either the sender or the recipient
+            int unreadMessagesCount = db.Messages
+                .Where(m => (m.ToUserId == userId || m.FromUserId == userId) && m.IsRead == false)
+                .Count();
+
+            return Json(new { count = unreadMessagesCount }, JsonRequestBehavior.AllowGet);
+        }
+
 
 
 

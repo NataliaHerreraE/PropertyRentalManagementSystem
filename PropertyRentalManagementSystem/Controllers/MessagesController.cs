@@ -7,6 +7,7 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using PropertyRentalManagementSystem.Models;
+using PropertyRentalManagementSystem.ViewModels;
 
 namespace PropertyRentalManagementSystem.Controllers
 {
@@ -16,26 +17,60 @@ namespace PropertyRentalManagementSystem.Controllers
         private PropertyRentalManagementDBEntities db = new PropertyRentalManagementDBEntities();
 
         // GET: Messages
-        public ActionResult Index()
+        public ActionResult Index(string fromUserSearch, string toUserSearch)
         {
-            var messages = db.Messages.Include(m => m.Apartment).Include(m => m.User).Include(m => m.User1).Include(m => m.TypeMessage);
-            return View(messages.ToList());
+            int userId = (int)Session["UserId"];
+
+            // Load all messages for this user
+            var messagesQuery = db.Messages
+                .Include(m => m.Apartment)
+                .Include(m => m.User) // FromUser
+                .Include(m => m.User1) // ToUser
+                .Include(m => m.TypeMessage);
+
+            // Apply search filters if provided
+            if (!string.IsNullOrEmpty(fromUserSearch))
+            {
+                messagesQuery = messagesQuery.Where(m => m.User.FirstName.Contains(fromUserSearch) || m.User.LastName.Contains(fromUserSearch));
+            }
+            if (!string.IsNullOrEmpty(toUserSearch))
+            {
+                messagesQuery = messagesQuery.Where(m => m.User1.FirstName.Contains(toUserSearch) || m.User1.LastName.Contains(toUserSearch));
+            }
+
+            // Separate messages into read and unread
+            var unreadMessages = messagesQuery.Where(m => m.ToUserId == userId && !m.IsRead).ToList();
+            var readMessages = messagesQuery.Where(m => m.ToUserId == userId && m.IsRead).ToList();
+
+            // All messages with additional details
+            var allMessages = messagesQuery.ToList();
+
+            // ViewBag counts for display
+            ViewBag.UnreadMessagesCount = unreadMessages.Count;
+            ViewBag.ReadMessagesCount = readMessages.Count;
+
+            var viewModel = new MessagesViewModel
+            {
+                UnreadMessages = unreadMessages,
+                ReadMessages = readMessages,
+                AllMessages = allMessages
+            };
+
+            return View(viewModel);
         }
 
-        // GET: Messages/Details/5
-        public ActionResult Details(int? id)
+        // View Message Action - marks message as read
+        public ActionResult ViewMessage(int id)
         {
-            if (id == null)
+            var message = db.Messages.Find(id);
+            if (message != null && !message.IsRead)
             {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Message message = db.Messages.Find(id);
-            if (message == null)
-            {
-                return HttpNotFound();
+                message.IsRead = true;
+                db.SaveChanges();
             }
             return View(message);
         }
+
 
         // GET: Messages/Create
         public ActionResult Create()
@@ -68,44 +103,6 @@ namespace PropertyRentalManagementSystem.Controllers
             return View(message);
         }
 
-        // GET: Messages/Edit/5
-        public ActionResult Edit(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Message message = db.Messages.Find(id);
-            if (message == null)
-            {
-                return HttpNotFound();
-            }
-            ViewBag.ApartmentId = new SelectList(db.Apartments, "ApartmentId", "AppartmentNumber", message.ApartmentId);
-            ViewBag.FromUserId = new SelectList(db.Users, "UserId", "FirstName", message.FromUserId);
-            ViewBag.ToUserId = new SelectList(db.Users, "UserId", "FirstName", message.ToUserId);
-            ViewBag.TypeId = new SelectList(db.TypeMessages, "TypeId", "TypeName", message.TypeId);
-            return View(message);
-        }
-
-        // POST: Messages/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "MessageId,FromUserId,ToUserId,ApartmentId,Message1,DateSent,TypeId")] Message message)
-        {
-            if (ModelState.IsValid)
-            {
-                db.Entry(message).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
-            }
-            ViewBag.ApartmentId = new SelectList(db.Apartments, "ApartmentId", "AppartmentNumber", message.ApartmentId);
-            ViewBag.FromUserId = new SelectList(db.Users, "UserId", "FirstName", message.FromUserId);
-            ViewBag.ToUserId = new SelectList(db.Users, "UserId", "FirstName", message.ToUserId);
-            ViewBag.TypeId = new SelectList(db.TypeMessages, "TypeId", "TypeName", message.TypeId);
-            return View(message);
-        }
 
         // GET: Messages/Delete/5
         public ActionResult Delete(int? id)
@@ -132,6 +129,8 @@ namespace PropertyRentalManagementSystem.Controllers
             db.SaveChanges();
             return RedirectToAction("Index");
         }
+
+      
 
         protected override void Dispose(bool disposing)
         {

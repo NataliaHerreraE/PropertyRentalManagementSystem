@@ -1,63 +1,103 @@
-﻿@model IEnumerable<PropertyRentalManagementSystem.Models.Message>
+﻿@model PropertyRentalManagementSystem.ViewModels.MessagesViewModel
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Messages";
 }
 
-<h2>Index</h2>
+<h2>Messages</h2>
 
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Message1)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.DateSent)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Apartment.AppartmentNumber)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.User.FirstName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.User1.FirstName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.TypeMessage.TypeName)
-        </th>
-        <th></th>
-    </tr>
+<!-- Unread and Read Messages Count Cards -->
+<div class="container mt-4">
+    <div class="row text-center">
+        <!-- Unread Messages Card -->
+        <div class="col-md-6 mb-4">
+            <div class="dashboard-card">
+                <h3>Unread Messages</h3>
+                <h2>@ViewBag.UnreadMessagesCount</h2>
+            </div>
+        </div>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Message1)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.DateSent)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Apartment.AppartmentNumber)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.User.FirstName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.User1.FirstName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.TypeMessage.TypeName)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.MessageId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.MessageId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.MessageId })
-        </td>
-    </tr>
-}
+        <!-- Read Messages Card -->
+        <div class="col-md-6 mb-4">
+            <div class="dashboard-card">
+                <h3>Read Messages</h3>
+                <h2>@ViewBag.ReadMessagesCount</h2>
+            </div>
+        </div>
+    </div>
+</div>
 
+<!-- Search fields for Sender and Receiver with Centered Search Button -->
+<div class="container mt-4">
+    <div class="row align-items-end">
+        <!-- Sender Search Field -->
+        <div class="col-md-5">
+            <label for="senderSearch">Sender:</label>
+            <input type="text" id="senderSearch" class="form-control" placeholder="Search by sender's name..." />
+        </div>
+
+
+        <!-- Receiver Search Field -->
+        <div class="col-md-5">
+            <label for="receiverSearch">Receiver:</label>
+            <input type="text" id="receiverSearch" class="form-control" placeholder="Search by receiver's name..." />
+        </div>
+    </div>
+
+    <!-- Search Button -->
+    <div class="col-md-2 text-center">
+        <button id="searchButton" class="btn btn-primary mt-2">Search</button>
+    </div>
+    <br />
+</div>
+<!-- All Messages Table -->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Date Sent</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Apartment</th>
+            <th>Message</th>
+
+            <th>Type</th>
+            <th>Is Read</th>
+            <th>Actions</th> <!-- New Actions column -->
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var message in Model.AllMessages)
+        {
+            <tr>
+                <td>@message.DateSent.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@message.User.FirstName @message.User.LastName</td>
+                <td>@message.User1.FirstName @message.User1.LastName</td>
+                <td>@message.Apartment.AppartmentNumber</td>
+                <td>@message.Message1</td> <!-- Use Message1 here -->
+
+                <td>@message.TypeMessage.TypeName</td>
+                <td>@(message.IsRead ? "Yes" : "No")</td>
+                <td>
+                    <!-- View Message Button -->
+                    <a href="@Url.Action("ViewMessage", "Messages", new { id = message.MessageId })" class="btn btn-primary btn-sm">View</a>
+
+                    <!-- Delete Button with a form for safety -->
+                    <form action="@Url.Action("Delete", "Messages", new { id = message.MessageId })" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this message?');">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
 </table>
+
+
+<!-- Button to create a new apartment -->
+<p>
+    <a href="@Url.Action("Create", "Message")" class="btn btn-success">Send New Message</a>
+</p>
+
+<!-- Button to go back to the dashboard -->
+<p>
+    <a href="@Url.Action("Index", "PropertyManagerDashboard")" class="btn btn-primary">Back to Dashboard</a>
+</p>
