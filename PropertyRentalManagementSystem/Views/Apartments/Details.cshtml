@@ -2,33 +2,70 @@
 
 <h2 class="dashboard-title">Apartment Details</h2>
 
-<div class="apartment-details-card">
-    <!-- Display Image (only if there is one) -->
-    <div class="apartment-image-container">
-        @if (!string.IsNullOrEmpty(Model.ImagePath))
+<div class="container">
+    <div class="row">
+        <!-- Building Details Card (Displayed first for Tenants) -->
+        @if (ViewBag.IsTenant)
         {
-            <img src="~/Content/@Model.ImagePath" alt="Apartment Image" class="apartment-image" />
+            <div class="col-md-6 mb-4">
+                <div class="card building-info">
+                    <div class="card-body">
+                        <h3 class="card-title">Building Details</h3>
+
+                        @if (!string.IsNullOrEmpty(Model.Building.ImagePath))
+                        {
+                            <img src="~/Content/@Model.Building.ImagePath" alt="Building Image" class="img-fluid" style="height: 500px; object-fit: cover; width: 100%;" />
+                        }
+                        else
+                        {
+                            <p>No image available for the building</p>
+                        }
+
+                        <p><strong>Building Name:</strong> @Model.Building.BuildingName</p>
+                        <p><strong>City:</strong> @Model.Building.City</p>
+                        <p><strong>Address:</strong> @Model.Building.Address</p>
+                        <p><strong>Postal Code:</strong> @Model.Building.PostalCode</p>
+                    </div>
+                </div>
+            </div>
         }
-        else
-        {
-            <p>No image available</p>
-        }
+
+        <!-- Apartment Details Card (Displayed next to Building Details) -->
+        <div class="col-md-6 mb-4">
+            <div class="card apartment-info">
+                <div class="card-body">
+                    <h3 class="card-title">Apartment Details</h3>
+
+                    @if (!string.IsNullOrEmpty(Model.ImagePath))
+                    {
+                        <img src="~/Content/@Model.ImagePath" alt="Apartment Image" class="img-fluid" style="height: 500px; object-fit: cover; width: 100%;" />
+                    }
+                    else
+                    {
+                        <p>No image available for the apartment</p>
+                    }
+
+                    <p><strong>Apartment Number:</strong> @Model.AppartmentNumber</p>
+                    <p><strong>Rooms:</strong> @Model.Rooms</p>
+                    <p><strong>Bathrooms:</strong> @Model.Bathrooms</p>
+                    <p><strong>Status:</strong> @Model.Status.StatusName</p>
+                    <p><strong>Price:</strong> @Model.Price.ToString("C")</p>
+                    <p><strong>Date Listed:</strong> @Model.DateListed.ToString("yyyy-MM-dd")</p>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Display Apartment Details -->
-    <div class="apartment-info">
-        <h3>Apartment Number: @Model.AppartmentNumber</h3>
-        <p><strong>Building Name:</strong> @Model.Building.BuildingName</p>
-        <p><strong>Rooms:</strong> @Model.Rooms</p>
-        <p><strong>Bathrooms:</strong> @Model.Bathrooms</p>
-        <p><strong>Status:</strong> @Model.Status.StatusName</p>
-        <p><strong>Price:</strong> @Model.Price.ToString("C")</p> <!-- Display price as currency -->
-        <p><strong>Date Listed:</strong> @Model.DateListed.ToString("yyyy-MM-dd")</p>
-    </div>
+    <!-- Manager Actions for Editing (Displayed only to Managers) -->
+    @if (!ViewBag.IsTenant)
+    {
+        <div class="details-actions text-center mt-4">
+            @Html.ActionLink("Edit", "Edit", new { id = Model.ApartmentId }, new { @class = "btn btn-warning" })
+        </div>
+    }
 
-    <!-- Back and Edit Links -->
-    <div class="details-actions">
-        @Html.ActionLink("Edit", "Edit", new { id = Model.ApartmentId }, new { @class = "btn btn-warning" })
-        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
+    <!-- Back to Index Button for All Users -->
+    <div class="text-center mt-4">
+        @Html.ActionLink("Back to Index", "Index", "Apartments", new { @class = "btn btn-secondary" })
     </div>
 </div>

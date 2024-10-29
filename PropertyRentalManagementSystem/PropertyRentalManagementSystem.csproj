@@ -152,6 +152,7 @@
     <Compile Include="Controllers\PropertyManagerDashboardController.cs" />
     <Compile Include="Controllers\RentalAgreementsController.cs" />
     <Compile Include="Controllers\TenantController.cs" />
+    <Compile Include="Controllers\TenantsDashboardController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -207,6 +208,7 @@
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\MessagesViewModel.cs" />
     <Compile Include="ViewModels\SignUpViewModel.cs" />
+    <Compile Include="ViewModels\TenantDashboardViewModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Views\web.config" />
@@ -285,6 +287,7 @@
     <Content Include="Views\RentalAgreements\Details.cshtml" />
     <Content Include="Views\RentalAgreements\Edit.cshtml" />
     <Content Include="Views\RentalAgreements\Index.cshtml" />
+    <Content Include="Views\TenantsDashboard\Index.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

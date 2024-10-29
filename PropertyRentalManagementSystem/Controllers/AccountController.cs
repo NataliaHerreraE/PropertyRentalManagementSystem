@@ -25,26 +25,22 @@ namespace PropertyRentalManagementSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Authenticate the user
                 var user = db.Users.FirstOrDefault(u => u.Email == model.Email && u.Password == model.Password);
                 if (user != null)
                 {
-                    // Get role name
                     var roleName = db.Roles.FirstOrDefault(r => r.RoleId == user.RoleId)?.RoleName;
 
-                    // Check if the role is valid and assign session values
-                    if (roleName == "Property Owner" || roleName == "Administrator" || roleName == "Property Manager")
+                    if (new[] { "Property Owner", "Administrator", "Property Manager", "Tenant" }.Contains(roleName))
                     {
-                        // Set session variables
+                        // Store user info in session
                         Session["UserName"] = user.Email;
                         Session["UserId"] = user.UserId;
                         Session["RoleId"] = user.RoleId;
                         Session["RoleName"] = roleName;
 
-                        // Set authentication cookie
                         FormsAuthentication.SetAuthCookie(user.Email, false);
 
-                        // Redirect to appropriate dashboard based on role
+                        // Redirect based on role
                         if (roleName == "Property Owner" || roleName == "Administrator")
                         {
                             return RedirectToAction("Index", "OwnersAdministratorsDashboard");
@@ -53,10 +49,13 @@ namespace PropertyRentalManagementSystem.Controllers
                         {
                             return RedirectToAction("Index", "PropertyManagerDashboard");
                         }
+                        else if (roleName == "Tenant")
+                        {
+                            return RedirectToAction("Index", "TenantsDashboard"); 
+                        }
                     }
                     else
                     {
-                        // Role not recognized, clear session and display error
                         Session.Clear();
                         ModelState.AddModelError("", "Access Denied. Invalid role assigned.");
                     }
@@ -71,16 +70,15 @@ namespace PropertyRentalManagementSystem.Controllers
         }
 
 
+
         [HttpPost]
-        [ValidateAntiForgeryToken]  // This validates the token sent by the form
+        [ValidateAntiForgeryToken]  
         public ActionResult Logout()
         {
-            // Clear session and authentication
+           
             FormsAuthentication.SignOut();
             Session.Clear();
             Session.Abandon();
-
-            // Redirect to home page after logout
             return RedirectToAction("Index", "Home");
         }
 
@@ -111,7 +109,7 @@ namespace PropertyRentalManagementSystem.Controllers
                     Email = model.Email,
                     Password = model.Password,
                     Phone = model.Phone,
-                    RoleId = 4  // RoleId for Tenant
+                    RoleId = 4  
                 };
 
                 db.Users.Add(user);

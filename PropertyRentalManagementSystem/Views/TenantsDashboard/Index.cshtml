@@ -1,0 +1,64 @@
+﻿@{
+    ViewBag.Title = "Tenant Dashboard";
+}
+
+<h2 class="dashboard-title">Tenant Dashboard</h2>
+
+<p class="welcome-text">
+    WELCOME @ViewBag.UserName
+</p>
+
+<p class="instruction-text">
+    Select an option below to view or manage apartments, messages, appointments, rental agreements, and payments.
+</p>
+
+<div class="container">
+    <div class="row text-center mt-4">
+
+        <!-- Available Apartments -->
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>Available Apartments</h3>
+                <h2>@ViewBag.AvailableApartmentCount</h2>
+            </div>
+            <a href="@Url.Action("Available", "Apartments")" class="btn btn-dark mt-2">See Available Apartments</a>
+
+        </div>
+
+        <!-- Messages -->
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>Messages</h3>
+                <h2>@ViewBag.MessageCount</h2>
+            </div>
+            <a href="@Url.Action("Index", "Messages")" class="btn btn-dark mt-2">Manage Messages</a>
+        </div>
+
+        <!-- Appointments -->
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>Appointments</h3>
+                <h2>@ViewBag.AppointmentCount</h2>
+            </div>
+            <a href="@Url.Action("Index", "Appointments")" class="btn btn-dark mt-2">See Appointments</a>
+        </div>
+
+        <!-- Rental Agreements -->
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>Rental Agreements</h3>
+                <h2>@ViewBag.RentalAgreementsCount</h2>
+            </div>
+            <a href="@Url.Action("Index", "RentalAgreements")" class="btn btn-dark mt-2">See Rental Agreements</a>
+        </div>
+
+        <!-- Payments -->
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>Payments</h3>
+                <h2>@ViewBag.PaymentCount</h2>
+            </div>
+            <a href="@Url.Action("Create", "Payments")" class="btn btn-dark mt-2">Make a Payment</a>
+        </div>
+    </div>
+</div>

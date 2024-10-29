@@ -17,83 +17,124 @@ namespace PropertyRentalManagementSystem.Controllers
         private PropertyRentalManagementDBEntities db = new PropertyRentalManagementDBEntities();
 
         // GET: Apartments
-        public ActionResult Index(string appartmentNumberStatus, string rooms, string bathrooms, string price)
+        public ActionResult Index(string appartmentNumberStatus, string city, string rooms, string bathrooms, string price)
         {
             int userId = (int)Session["UserId"];
+            string roleName = (string)Session["RoleName"];
 
-            // Retrieve only the apartments related to buildings managed by the current user
-            var apartments = db.Apartments
-                .Include(a => a.Building)
-                .Include(a => a.Status)
-                .Where(a => a.Building.PropertyManagerId == userId); // Filtering by manager's buildings
+            IQueryable<Apartment> apartments;
 
-            // Count available and rented apartments for summary cards
-            ViewBag.AvailableApartmentCount = apartments.Count(a => a.Status.StatusName == "Available");
-            ViewBag.RentedApartmentCount = apartments.Count(a => a.Status.StatusName == "Rented");
-
-            // Filter by AppartmentNumber or Status if search term is provided
-            if (!string.IsNullOrEmpty(appartmentNumberStatus))
+            if (roleName == "Tenant")
             {
-                apartments = apartments.Where(a =>
-                    a.AppartmentNumber.Contains(appartmentNumberStatus) ||
-                    a.Status.StatusName.Contains(appartmentNumberStatus));
-            }
+                // Show only available apartments for tenants
+                apartments = db.Apartments
+                    .Include(a => a.Building)
+                    .Include(a => a.Status)
+                    .Where(a => a.Status.StatusName == "Available");
 
-            // Filter by Rooms if search term is provided
-            if (!string.IsNullOrEmpty(rooms))
-            {
-                if (int.TryParse(rooms, out int roomCount))
+                // Tenant-specific filters
+                if (!string.IsNullOrEmpty(appartmentNumberStatus))
+                {
+                    apartments = apartments.Where(a => a.AppartmentNumber.Contains(appartmentNumberStatus));
+                }
+                if (!string.IsNullOrEmpty(city))
+                {
+                    apartments = apartments.Where(a => a.Building.City.ToLower().Contains(city.ToLower()));
+                }
+                if (!string.IsNullOrEmpty(rooms) && int.TryParse(rooms, out int roomCount))
                 {
                     apartments = apartments.Where(a => a.Rooms == roomCount);
                 }
-                else
-                {
-                    TempData["ErrorMessage"] = "Please enter a valid number for Rooms.";
-                }
-            }
-
-            // Filter by Bathrooms if search term is provided
-            if (!string.IsNullOrEmpty(bathrooms))
-            {
-                if (int.TryParse(bathrooms, out int bathroomCount))
+                if (!string.IsNullOrEmpty(bathrooms) && int.TryParse(bathrooms, out int bathroomCount))
                 {
                     apartments = apartments.Where(a => a.Bathrooms == bathroomCount);
                 }
-                else
-                {
-                    TempData["ErrorMessage"] = "Please enter a valid number for Bathrooms.";
-                }
-            }
-
-            // Filter by Price if search term is provided
-            if (!string.IsNullOrEmpty(price))
-            {
-                if (decimal.TryParse(price, out decimal priceValue))
+                if (!string.IsNullOrEmpty(price) && decimal.TryParse(price, out decimal priceValue))
                 {
                     apartments = apartments.Where(a => a.Price <= priceValue);
                 }
-                else
+
+                ViewBag.IsTenant = true; // Indicate the view is for tenant
+            }
+            else if (roleName == "Property Manager")
+            {
+                // Retrieve only the apartments related to buildings managed by the current user
+                apartments = db.Apartments
+                    .Include(a => a.Building)
+                    .Include(a => a.Status)
+                    .Where(a => a.Building.PropertyManagerId == userId);
+
+                // Count available and rented apartments for summary cards
+                ViewBag.AvailableApartmentCount = apartments.Count(a => a.Status.StatusName == "Available");
+                ViewBag.RentedApartmentCount = apartments.Count(a => a.Status.StatusName == "Rented");
+
+                // Property Manager-specific filters
+                if (!string.IsNullOrEmpty(appartmentNumberStatus))
                 {
-                    TempData["ErrorMessage"] = "Please enter a valid price.";
+                    apartments = apartments.Where(a =>
+                        a.AppartmentNumber.Contains(appartmentNumberStatus) ||
+                        a.Status.StatusName.Contains(appartmentNumberStatus));
                 }
+                if (!string.IsNullOrEmpty(city))
+                {
+                    apartments = apartments.Where(a => a.Building.City.ToLower().Contains(city.ToLower()));
+                }
+                if (!string.IsNullOrEmpty(rooms) && int.TryParse(rooms, out int roomCount))
+                {
+                    apartments = apartments.Where(a => a.Rooms == roomCount);
+                }
+                if (!string.IsNullOrEmpty(bathrooms) && int.TryParse(bathrooms, out int bathroomCount))
+                {
+                    apartments = apartments.Where(a => a.Bathrooms == bathroomCount);
+                }
+                if (!string.IsNullOrEmpty(price) && decimal.TryParse(price, out decimal priceValue))
+                {
+                    apartments = apartments.Where(a => a.Price <= priceValue);
+                }
+
+                ViewBag.IsTenant = false; // Indicate the view is for property manager
+            }
+            else
+            {
+                return RedirectToAction("Login", "Account"); // Redirect if the role is unrecognized
             }
 
             return View(apartments.ToList());
         }
 
 
+
+
         // GET: Apartments/Details/5
         public ActionResult Details(int? id)
         {
+            /*            if (id == null)
+                        {
+                            return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+                        }
+
+                        Apartment apartment = db.Apartments.Find(id);
+                        if (apartment == null)
+                        {
+                            return HttpNotFound();
+                        }
+                        return View(apartment);*/
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Apartment apartment = db.Apartments.Find(id);
+
+            Apartment apartment = db.Apartments
+                .Include(a => a.Building) // Include Building details for tenant view
+                .FirstOrDefault(a => a.ApartmentId == id);
+
             if (apartment == null)
             {
                 return HttpNotFound();
             }
+
+            ViewBag.IsTenant = (string)Session["RoleName"] == "Tenant";
+
             return View(apartment);
         }
 
@@ -329,5 +370,20 @@ namespace PropertyRentalManagementSystem.Controllers
             }
             base.Dispose(disposing);
         }
+
+        public ActionResult Available()
+        {
+            int userId = (int)Session["UserId"];
+
+            // Fetch only apartments that are available
+            var availableApartments = db.Apartments
+                .Include(a => a.Building)
+                .Where(a => a.Status.StatusName == "Available")
+                .ToList();
+
+            ViewBag.IsTenant = true; // Set this to control tenant-specific view sections
+            return View("Index", availableApartments);
+        }
+
     }
 }

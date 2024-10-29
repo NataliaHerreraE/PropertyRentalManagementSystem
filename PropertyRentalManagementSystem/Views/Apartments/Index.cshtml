@@ -14,111 +14,186 @@
     </div>
 }
 
-<h2>Manage Apartments</h2>
+@if (ViewBag.IsTenant != true)
+{
+    <h2>Manage Apartments</h2>
 
-<!-- Summary of Rented and Available Apartments in Cards -->
-@{
-    var rentedCount = Model.Count(a => a.Status.StatusName == "Rented");
-    var availableCount = Model.Count(a => a.Status.StatusName == "Available");
+    <!-- Summary of Rented and Available Apartments in Cards -->
+    {
+        var rentedCount = Model.Count(a => a.Status.StatusName == "Rented");
+        var availableCount = Model.Count(a => a.Status.StatusName == "Available");
+    }
+    <div class="container">
+        <div class="row text-center mt-4">
+            <!-- Available Apartments -->
+            <div class="col-md-6 mb-4">
+                <div class="dashboard-card">
+                    <h3>Available Apartments</h3>
+                    <h2>@ViewBag.AvailableApartmentCount</h2> <!-- Display available count here -->
+                </div>
+            </div>
+
+            <!-- Rented Apartments -->
+            <div class="col-md-6 mb-4">
+                <div class="dashboard-card">
+                    <h3>Rented Apartments</h3>
+                    <h2>@ViewBag.RentedApartmentCount</h2> <!-- Display rented count here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Search bars -->
+        <div class="search-bar">
+            @using (Html.BeginForm("Index", "Apartments", FormMethod.Get))
+            {
+                <div class="form-row">
+                    <!-- Search by Apartment Number or Status -->
+                    <div class="form-group">
+                        <h4>Search by Apartment Number or Status (Available or Rented)</h4>
+                        <input type="text" name="appartmentNumberStatus" value="@Request.QueryString["appartmentNumberStatus"]" class="form-control" placeholder="Enter the Apartment Number or Status" />
+                    </div>
+
+                    <!-- Search by Rooms -->
+                    <div class="form-group">
+                        <h4>Search by Number of Rooms</h4>
+                        <input type="text" name="rooms" value="@Request.QueryString["rooms"]" class="form-control" placeholder="Enter the number of Rooms" />
+                    </div>
+
+                    <!-- Search by Bathrooms -->
+                    <div class="form-group">
+                        <h4>Search by Number of Bathrooms</h4>
+                        <input type="text" name="bathrooms" value="@Request.QueryString["bathrooms"]" class="form-control" placeholder="Enter the number of Bathrooms" />
+                    </div>
+
+                    <!-- Search by price -->
+                    <div class="form-group">
+                        <h4>Search by Price</h4>
+                        <input type="text" name="price" value="@Request.QueryString["price"]" class="form-control" placeholder="Enter the maximum Price" />
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary">Search</button>
+                        <a href="@Url.Action("Index", "Apartments")" class="btn btn-secondary">List All Apartments</a>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Apartment Table -->
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Building Name</th>
+                    <th>Apartment Number</th>
+                    <th>Rooms</th>
+                    <th>Bathrooms</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var apartment in Model)
+                {
+                    <tr>
+                        <td>@apartment.Building.BuildingName</td>
+                        <td>@apartment.AppartmentNumber</td>
+                        <td>@apartment.Rooms</td>
+                        <td>@apartment.Bathrooms</td>
+                        <td>@apartment.Price.ToString("C")</td>
+                        <td>@apartment.Status.StatusName</td>
+
+                        <td>
+                            <a href="@Url.Action("Details", "Apartments", new { id = apartment.ApartmentId })" class="btn btn-info">Details</a>
+                            <a href="@Url.Action("Edit", "Apartments", new { id = apartment.ApartmentId })" class="btn btn-warning">Edit</a>
+                            <a href="@Url.Action("Delete", "Apartments", new { id = apartment.ApartmentId })" class="btn btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <!-- Button to create a new apartment -->
+        <p>
+            <a href="@Url.Action("Create", "Apartments")" class="btn btn-success">Create New Apartment</a>
+        </p>
+
+        <!-- Button to go back to the dashboard -->
+        <p>
+            <a href="@Url.Action("Index", "PropertyManagerDashboard")" class="btn btn-primary">Back to Dashboard</a>
+        </p>
+    </div>
 }
-<div class="container">
-    <div class="row text-center mt-4">
-        <!-- Available Apartments -->
-        <div class="col-md-6 mb-4">
-            <div class="dashboard-card">
-                <h3>Available Apartments</h3>
-                <h2>@ViewBag.AvailableApartmentCount</h2> <!-- Display available count here -->
-            </div>
-        </div>
+else
+{
 
-        <!-- Rented Apartments -->
-        <div class="col-md-6 mb-4">
-            <div class="dashboard-card">
-                <h3>Rented Apartments</h3>
-                <h2>@ViewBag.RentedApartmentCount</h2> <!-- Display rented count here -->
-            </div>
+    <h2>Available Apartments</h2>
+    <div class="container">
+        <div class="search-bar">
+            @using (Html.BeginForm("Index", "Apartments", FormMethod.Get))
+            {
+                <div class="form-row d-flex flex-wrap">
+                    <!-- City -->
+                    <div class="form-group col-md-2">
+                        <label for="city">City</label>
+                        <input type="text" id="city" name="city" value="@Request.QueryString["city"]" class="form-control" placeholder="Enter City" />
+                    </div>
+
+                    <!-- Rooms -->
+                    <div class="form-group col-md-2">
+                        <label for="rooms">Rooms</label>
+                        <input type="text" id="rooms" name="rooms" value="@Request.QueryString["rooms"]" class="form-control" placeholder="Number of Rooms" />
+                    </div>
+
+                    <!-- Bathrooms -->
+                    <div class="form-group col-md-2">
+                        <label for="bathrooms">Bathrooms</label>
+                        <input type="text" id="bathrooms" name="bathrooms" value="@Request.QueryString["bathrooms"]" class="form-control" placeholder="Number of Bathrooms" />
+                    </div>
+
+                    <!-- Max Price -->
+                    <div class="form-group col-md-2">
+                        <label for="price">Max Price</label>
+                        <input type="text" id="price" name="price" value="@Request.QueryString["price"]" class="form-control" placeholder="Enter Max Price" />
+                    </div>
+
+                    <!-- Search and List All Buttons -->
+                    <div class="form-group col-md-2 align-self-end">
+                        <button type="submit" class="btn btn-primary w-100">Search</button>
+                    </div>
+                    <div class="form-group col-md-2 align-self-end">
+                        <a href="@Url.Action("Index", "Apartments")" class="btn btn-secondary w-100">List All</a>
+                    </div>
+                </div>
+            }
         </div>
     </div>
 
-    <!-- Search bars -->
-    <div class="search-bar">
-        @using (Html.BeginForm("Index", "Apartments", FormMethod.Get))
-        {
-            <div class="form-row">
-                <!-- Search by Apartment Number or Status -->
-                <div class="form-group">
-                    <h4>Search by Apartment Number or Status (Available or Rented)</h4>
-                    <input type="text" name="appartmentNumberStatus" value="@Request.QueryString["appartmentNumberStatus"]" class="form-control" placeholder="Enter the Apartment Number or Status" />
-                </div>
 
-                <!-- Search by Rooms -->
-                <div class="form-group">
-                    <h4>Search by  Number of Rooms</h4>
-                    <input type="text" name="rooms" value="@Request.QueryString["rooms"]" class="form-control" placeholder="Enter the number of Rooms" />
-                </div>
-
-                <!-- Search by Bathrooms -->
-                <div class="form-group">
-                    <h4>Search by Number of Bathrooms</h4>
-                    <input type="text" name="bathrooms" value="@Request.QueryString["bathrooms"]" class="form-control" placeholder="Enter the number of Bathrooms" />
-                </div>
-
-                <!-- Search by price -->
-                <div class="form-group">
-                    <h4>Search by Price</h4>
-                    <input type="text" name="price" value="@Request.QueryString["price"]" class="form-control" placeholder="Enter the maximum Price" />
-                </div>
-
-                <div class="form-group">
-                    <button type="submit" class="btn btn-primary">Search</button>
-                    <a href="@Url.Action("Index", "Apartments")" class="btn btn-secondary">List All Apartments</a>
-                </div>
-            </div>
-        }
-    </div>
-
-
-    <!-- Apartment Table -->
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Building Name</th>
-                <th>Apartment Number</th>
-                <th>Rooms</th>
-                <th>Bathrooms</th>
-                <th>Price</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
+    <!-- Display Filtered Apartments -->
+    <div class="container">
+        <div class="row">
             @foreach (var apartment in Model)
             {
-                <tr>
-                    <td>@apartment.Building.BuildingName</td>
-                    <td>@apartment.AppartmentNumber</td>
-                    <td>@apartment.Rooms</td>
-                    <td>@apartment.Bathrooms</td>
-                    <td>@apartment.Price.ToString("C")</td>
-                    <td>@apartment.Status.StatusName</td>
-
-                    <td>
-                        <a href="@Url.Action("Details", "Apartments", new { id = apartment.ApartmentId })" class="btn btn-info">Details</a>
-                        <a href="@Url.Action("Edit", "Apartments", new { id = apartment.ApartmentId })" class="btn btn-warning">Edit</a>
-                        <a href="@Url.Action("Delete", "Apartments", new { id = apartment.ApartmentId })" class="btn btn-danger">Delete</a>
-                    </td>
-                </tr>
+                <div class="col-md-4 mb-4">
+                    <div class="card">
+                        <img src="~/Content/@apartment.ImagePath" class="card-img-top" alt="Apartment Image" style="height: 200px; object-fit: cover;" />
+                        <div class="card-body">
+                            <h5 class="card-title">@apartment.Building.BuildingName - Apt @apartment.AppartmentNumber</h5>
+                            <p class="card-text">
+                                <strong>City:</strong> @apartment.Building.City<br />
+                                <strong>Address:</strong> @apartment.Building.Address<br />
+                                <strong>Rooms:</strong> @apartment.Rooms<br />
+                                <strong>Bathrooms:</strong> @apartment.Bathrooms<br />
+                                <strong>Price:</strong> @apartment.Price.ToString("C")<br />
+                                <strong>Date Listed:</strong> @apartment.DateListed.ToString("yyyy-MM-dd")
+                            </p>
+                            <a href="@Url.Action("Details", "Apartments", new { id = apartment.ApartmentId })" class="btn btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
             }
-        </tbody>
-    </table>
+        </div>
+    </div>
 
-    <!-- Button to create a new apartment -->
-    <p>
-        <a href="@Url.Action("Create", "Apartments")" class="btn btn-success">Create New Apartment</a>
-    </p>
-
-    <!-- Button to go back to the dashboard -->
-    <p>
-        <a href="@Url.Action("Index", "PropertyManagerDashboard")" class="btn btn-primary">Back to Dashboard</a>
-    </p>
-</div>
+}
