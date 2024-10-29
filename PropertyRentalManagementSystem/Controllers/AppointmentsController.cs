@@ -19,20 +19,50 @@ namespace PropertyRentalManagementSystem.Controllers
         public ActionResult Index(string tenantSearch, DateTime? dateSearch, int? statusId, int? buildingId, int? apartmentId)
         {
             int userId = (int)Session["UserId"];
+            string roleName = (string)Session["RoleName"];
 
-            var appointments = db.Appointments
-                .Include(a => a.Status)
-                .Include(a => a.Apartment)
-                .Include(a => a.Apartment.Building)
-                .Include(a => a.User)
-                .Where(a => a.Apartment.Building.PropertyManagerId == userId);
+            IQueryable<Appointment> appointments;
 
-            // Apply filters
-            if (!string.IsNullOrEmpty(tenantSearch))
+            if (roleName == "Tenant")
             {
-                appointments = appointments.Where(a => (a.User.FirstName + " " + a.User.LastName).Contains(tenantSearch));
+                // Get appointments for the tenant, including the manager's information via the Building table
+                appointments = db.Appointments
+                    .Include(a => a.Status)
+                    .Include(a => a.Apartment)
+                    .Include(a => a.Apartment.Building)
+                    .Include(a => a.Apartment.Building.User) // Include the User entity to access manager details
+                    .Where(a => a.TenantId == userId);
+
+                ViewBag.IsTenant = true;
+
+                // Count appointment statuses for the tenant
+                ViewBag.PendingCount = appointments.Count(a => a.Status.StatusName == "Pending");
+                ViewBag.CompleteCount = appointments.Count(a => a.Status.StatusName == "Complete");
+                ViewBag.CancelledCount = appointments.Count(a => a.Status.StatusName == "Cancelled");
+            }
+            else if (roleName == "Property Manager")
+            {
+                // Get appointments managed by the current property manager
+                appointments = db.Appointments
+                    .Include(a => a.Status)
+                    .Include(a => a.Apartment)
+                    .Include(a => a.Apartment.Building)
+                    .Include(a => a.User) // Include the Tenant's information
+                    .Where(a => a.Apartment.Building.PropertyManagerId == userId);
+
+                ViewBag.IsTenant = false;
+
+                // Count appointment statuses for the manager
+                ViewBag.PendingCount = appointments.Count(a => a.Status.StatusName == "Pending");
+                ViewBag.CompleteCount = appointments.Count(a => a.Status.StatusName == "Complete");
+                ViewBag.CancelledCount = appointments.Count(a => a.Status.StatusName == "Cancelled");
+            }
+            else
+            {
+                return RedirectToAction("Login", "Account"); // Redirect if the role is unrecognized
             }
 
+            // Apply search filters for both roles
             if (dateSearch.HasValue)
             {
                 appointments = appointments.Where(a => DbFunctions.TruncateTime(a.Date) == DbFunctions.TruncateTime(dateSearch.Value));
@@ -53,29 +83,44 @@ namespace PropertyRentalManagementSystem.Controllers
                 appointments = appointments.Where(a => a.ApartmentId == apartmentId.Value);
             }
 
-            // Count appointment statuses
-            ViewBag.PendingCount = appointments.Count(a => a.Status.StatusName == "Pending");
-            ViewBag.CompleteCount = appointments.Count(a => a.Status.StatusName == "Complete");
-            ViewBag.CancelledCount = appointments.Count(a => a.Status.StatusName == "Cancelled");
-
             // Populate dropdown lists for filtering
             ViewBag.StatusId = new SelectList(db.Status
                 .Where(s => s.StatusName == "Pending" || s.StatusName == "Complete" || s.StatusName == "Cancelled"),
                 "StatusId", "StatusName", statusId);
 
-            ViewBag.BuildingId = new SelectList(db.Buildings.Where(b => b.PropertyManagerId == userId), "BuildingId", "BuildingName", buildingId);
+            if (roleName == "Property Manager")
+            {
+                ViewBag.BuildingId = new SelectList(db.Buildings.Where(b => b.PropertyManagerId == userId), "BuildingId", "BuildingName", buildingId);
 
-            // Populate ApartmentId dropdown with all apartments managed by the current user
-            ViewBag.ApartmentId = new SelectList(db.Apartments
-                .Where(a => a.Building.PropertyManagerId == userId)
-                .Select(a => new
-                {
-                    a.ApartmentId,
-                    DisplayText = a.AppartmentNumber + " - " + a.Building.BuildingName
-                }), "ApartmentId", "DisplayText", apartmentId);
+                // Populate ApartmentId dropdown with all apartments managed by the current user
+                ViewBag.ApartmentId = new SelectList(db.Apartments
+                    .Where(a => a.Building.PropertyManagerId == userId)
+                    .Select(a => new
+                    {
+                        a.ApartmentId,
+                        DisplayText = a.AppartmentNumber + " - " + a.Building.BuildingName
+                    }), "ApartmentId", "DisplayText", apartmentId);
+            }
+            else if (roleName == "Tenant")
+            {
+                // For tenants, populate only buildings and apartments relevant to their appointments
+                ViewBag.BuildingId = new SelectList(appointments
+                    .Select(a => a.Apartment.Building).Distinct(), "BuildingId", "BuildingName", buildingId);
+
+                ViewBag.ApartmentId = new SelectList(appointments
+                    .Select(a => new
+                    {
+                        a.Apartment.ApartmentId,
+                        DisplayText = a.Apartment.AppartmentNumber + " - " + a.Apartment.Building.BuildingName
+                    }).Distinct(), "ApartmentId", "DisplayText", apartmentId);
+            }
 
             return View(appointments.ToList());
         }
+
+
+
+
 
 
 
@@ -86,13 +131,26 @@ namespace PropertyRentalManagementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Appointment appointment = db.Appointments.Find(id);
+
+            // Ensure the `User` (manager) entity is included along with the building and apartment information
+            Appointment appointment = db.Appointments
+                .Include(a => a.Status)
+                .Include(a => a.Apartment)
+                .Include(a => a.Apartment.Building)
+                .Include(a => a.Apartment.Building.User) // Ensure manager details are loaded
+                .FirstOrDefault(a => a.AppointmentId == id);
+
             if (appointment == null)
             {
                 return HttpNotFound();
             }
+
+            // Set the `IsTenant` flag for conditional display in the view
+            ViewBag.IsTenant = (string)Session["RoleName"] == "Tenant";
+
             return View(appointment);
         }
+
 
         // GET: Appointments/Create
         public ActionResult Create()

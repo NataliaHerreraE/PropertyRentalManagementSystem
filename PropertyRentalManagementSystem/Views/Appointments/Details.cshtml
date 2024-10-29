@@ -1,66 +1,43 @@
 ﻿@model PropertyRentalManagementSystem.Models.Appointment
 
-@{
-    ViewBag.Title = "Appointment Details";
-}
-
 <h2>Appointment Details</h2>
 
 <div class="appointment-details-card">
     <h4>Appointment Information</h4>
     <hr />
     <dl class="dl-horizontal">
-        <!-- Appointment Date -->
-        <dt>
-            @Html.DisplayNameFor(model => model.Date)
-        </dt>
-        <dd>
-            @Model.Date.ToString("yyyy-MM-dd")
-        </dd>
+        <dt>Appointment Date</dt>
+        <dd>@Model.Date.ToString("yyyy-MM-dd")</dd>
 
-        <!-- Appointment Time (if applicable) -->
-        <dt>
-            Time
-        </dt>
-        <dd>
-            @Model.Date.ToString("HH:mm")
-        </dd>
+        <dt>Time</dt>
+        <dd>@Model.Date.ToString("HH:mm")</dd>
 
-        <!-- Tenant Full Name -->
-        <dt>
-            Tenant Name
-        </dt>
-        <dd>
-            @Model.User.FirstName @Model.User.LastName
-        </dd>
+        <dt>Building</dt>
+        <dd>@Model.Apartment.Building.BuildingName</dd>
 
-        <!-- Building Name -->
-        <dt>
-            Building
-        </dt>
-        <dd>
-            @Model.Apartment.Building.BuildingName
-        </dd>
+        <dt>Apartment Number</dt>
+        <dd>@Model.Apartment.AppartmentNumber</dd>
 
-        <!-- Apartment Number -->
-        <dt>
-            Apartment Number
-        </dt>
-        <dd>
-            @Model.Apartment.AppartmentNumber
-        </dd>
+        @if (ViewBag.IsTenant == true)
+        {
+            <dt>Manager Name</dt>
+            <dd>@Model.Apartment.Building.User.FirstName @Model.Apartment.Building.User.LastName</dd>
+        }
+        else
+        {
+            <dt>Tenant Name</dt>
+            <dd>@Model.User.FirstName @Model.User.LastName</dd>
+        }
 
-        <!-- Appointment Status -->
-        <dt>
-            @Html.DisplayNameFor(model => model.Status.StatusName)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.Status.StatusName)
-        </dd>
+        <dt>Status</dt>
+        <dd>@Model.Status.StatusName</dd>
     </dl>
 </div>
 
 <p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.AppointmentId }, new { @class = "btn btn-warning" }) |
+    @if (ViewBag.IsTenant != true)
+    {
+        @Html.ActionLink("Edit", "Edit", new { id = Model.AppointmentId }, new { @class = "btn btn-warning" })
+    }
     @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
 </p>

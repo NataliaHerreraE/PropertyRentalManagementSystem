@@ -9,9 +9,24 @@
 <!-- Appointment Summary Cards -->
 <div class="container">
     <div class="row text-center mt-4">
-        <div class="col-md-4 mb-4"><div class="dashboard-card"><h3>Pending Appointments</h3><h2>@ViewBag.PendingCount</h2></div></div>
-        <div class="col-md-4 mb-4"><div class="dashboard-card"><h3>Complete Appointments</h3><h2>@ViewBag.CompleteCount</h2></div></div>
-        <div class="col-md-4 mb-4"><div class="dashboard-card"><h3>Cancelled Appointments</h3><h2>@ViewBag.CancelledCount</h2></div></div>
+        <div class="col-md-4 mb-4">
+            <div class="dashboard-card">
+                <h3>Pending Appointments</h3>
+                <h2>@ViewBag.PendingCount</h2>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="dashboard-card">
+                <h3>Complete Appointments</h3>
+                <h2>@ViewBag.CompleteCount</h2>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="dashboard-card">
+                <h3>Cancelled Appointments</h3>
+                <h2>@ViewBag.CancelledCount</h2>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -20,10 +35,10 @@
     <!-- Search Filters -->
     <div class="container mt-4">
         <div class="row">
-            <div class="col-md-3">
+            @*<div class="col-md-3">
                 <label for="tenantSearch">Tenant Name:</label>
                 <input type="text" id="tenantSearch" name="tenantSearch" class="form-control" placeholder="Search by tenant name..." />
-            </div>
+            </div>*@
             <div class="col-md-3">
                 <label for="dateSearch">Date:</label>
                 <input type="date" id="dateSearch" name="dateSearch" class="form-control" />
@@ -58,9 +73,16 @@
         <thead>
             <tr>
                 <th>Appointment Date</th>
-                <th>Tenant Full Name</th>
                 <th>Building</th>
                 <th>Apartment</th>
+                @if (ViewBag.IsTenant == true)
+                {
+                    <th>Manager Name</th>
+                }
+                else
+                {
+                    <th>Tenant Name</th>
+                }
                 <th>Status</th>
                 <th class="text-center">Actions</th>
             </tr>
@@ -70,23 +92,41 @@
             {
                 <tr>
                     <td>@appointment.Date.ToString("yyyy-MM-dd")</td>
-                    <td>@appointment.User.FirstName @appointment.User.LastName</td>
                     <td>@appointment.Apartment.Building.BuildingName</td>
                     <td>@appointment.Apartment.AppartmentNumber</td>
+                    <td>
+                        @if (ViewBag.IsTenant == true)
+                        {
+                            <!-- Display Property Manager's Full Name -->
+                            @appointment.Apartment.Building.User.FirstName @appointment.Apartment.Building.User.LastName
+                        }
+                        else
+                        {
+                            <!-- Display Tenant's Full Name for Property Manager -->
+                            @appointment.User.FirstName @appointment.User.LastName
+                        }
+                    </td>
                     <td>@appointment.Status.StatusName</td>
                     <td class="text-center">
                         @Html.ActionLink("Details", "Details", new { id = appointment.AppointmentId }, new { @class = "btn btn-info btn-sm" })
-                        @Html.ActionLink("Edit", "Edit", new { id = appointment.AppointmentId }, new { @class = "btn btn-warning btn-sm" })
-                        @Html.ActionLink("Delete", "Delete", new { id = appointment.AppointmentId }, new { @class = "btn btn-danger btn-sm" })
+                        @if (ViewBag.IsTenant != true)
+                        {
+                            @Html.ActionLink("Edit", "Edit", new { id = appointment.AppointmentId }, new { @class = "btn btn-warning btn-sm" })
+                            @Html.ActionLink("Delete", "Delete", new { id = appointment.AppointmentId }, new { @class = "btn btn-danger btn-sm" })
+                        }
                     </td>
                 </tr>
             }
         </tbody>
     </table>
 
-    <p>
-        <a href="@Url.Action("Create", "Appointments")" class="btn btn-success">Create New Apartment</a>
-    </p>
+    @if (ViewBag.IsTenant != true)
+    {
+        <p>
+            <a href="@Url.Action("Create", "Appointments")" class="btn btn-success">Create New Appointment</a>
+        </p>
+    }
+
     <!-- Back to Dashboard Button -->
     <p>
         <a href="@Url.Action("Index", "PropertyManagerDashboard")" class="btn btn-primary">Back to Dashboard</a>
