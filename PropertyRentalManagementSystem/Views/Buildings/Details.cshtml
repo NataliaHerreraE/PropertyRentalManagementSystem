@@ -1,32 +1,53 @@
 ﻿@model PropertyRentalManagementSystem.Models.Building
 
-<h2 class="dashboard-title">Building Details</h2>
+<h2>Building Details</h2>
 
-<div class="building-details-card">
-    <!-- Display Image (only if there is one) -->
-    <div class="building-image-container">
-        @if (!string.IsNullOrEmpty(Model.ImagePath))
-        {
-            <img src="~/Content/@Model.ImagePath" alt="Building Image" class="building-image" />
-        }
-        else
-        {
-            <p>No image available</p>
-        }
-    </div>
-
-    <!-- Display Building Details -->
-    <div class="building-info">
+<div class="card">
+    <div class="card-header">
         <h3>@Model.BuildingName</h3>
-        <p><strong>Address:</strong> @Model.Address</p>
-        <p><strong>City:</strong> @Model.City</p>
-        <p><strong>Postal Code:</strong> @Model.PostalCode</p>
-        <p><strong>Date Listed:</strong> @Model.DateListed.ToString("yyyy-MM-dd")</p>
     </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">Building Name</dt>
+            <dd class="col-sm-9">@Model.BuildingName</dd>
 
-    <!-- Back and Edit Links -->
-    <div class="details-actions">
-        @Html.ActionLink("Edit", "Edit", new { id = Model.BuildingId }, new { @class = "btn btn-warning" })
-        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
+            <dt class="col-sm-3">Address</dt>
+            <dd class="col-sm-9">@Model.Address</dd>
+
+            <dt class="col-sm-3">City</dt>
+            <dd class="col-sm-9">@Model.City</dd>
+
+            <dt class="col-sm-3">Postal Code</dt>
+            <dd class="col-sm-9">@Model.PostalCode</dd>
+
+            <dt class="col-sm-3">Date Listed</dt>
+            <dd class="col-sm-9">@Model.DateListed.ToString("yyyy-MM-dd")</dd>
+
+            <dt class="col-sm-3">Property Manager ID</dt>
+            <dd class="col-sm-9">@Model.PropertyManagerId</dd>
+
+            <dt class="col-sm-3">Owner</dt>
+            <dd class="col-sm-9">
+                @if (Model.OwnerId.HasValue && Model.User1 != null)
+                {
+                    @Model.User1.FirstName @Model.User1.LastName
+                }
+                else
+                {
+                    <span class="text-muted">No Owner Assigned</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">Image</dt>
+            <dd class="col-sm-9">
+                <img src="@Url.Content(Model.ImagePath)" alt="Building Image" style="max-width:200px; max-height:200px;" />
+            </dd>
+        </dl>
     </div>
 </div>
+
+<!-- Buttons to edit or go back to the list -->
+<p>
+    <a href="@Url.Action("Edit", "Buildings", new { id = Model.BuildingId })" class="btn btn-warning">Edit</a>
+    <a href="@Url.Action("Index", "Buildings")" class="btn btn-primary">Back to List</a>
+</p>

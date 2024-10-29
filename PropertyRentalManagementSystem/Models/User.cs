@@ -24,6 +24,7 @@ namespace PropertyRentalManagementSystem.Models
             this.Payments = new HashSet<Payment>();
             this.RentalAgreements = new HashSet<RentalAgreement>();
             this.UserRoleMappings = new HashSet<UserRoleMapping>();
+            this.Buildings1 = new HashSet<Building>();
         }
     
         public int UserId { get; set; }
@@ -49,5 +50,7 @@ namespace PropertyRentalManagementSystem.Models
         public virtual Role Role { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<UserRoleMapping> UserRoleMappings { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
+        public virtual ICollection<Building> Buildings1 { get; set; }
     }
 }

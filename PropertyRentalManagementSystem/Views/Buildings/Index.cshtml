@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<PropertyRentalManagementSystem.Models.Building>
+
 @if (TempData["SuccessMessage"] != null)
 {
     <div class="alert alert-success">
@@ -15,24 +16,37 @@
 
 <h2>Manage Buildings</h2>
 
-
-<!-- Search bar -->
+<!-- Search bar with search type dropdown and label -->
 @using (Html.BeginForm("Index", "Buildings", FormMethod.Get))
 {
-    <div class="form-group">
-        <input type="text" name="searchTerm" value="@Request.QueryString["searchTerm"]" class="form-control" placeholder="Search by Building Name or City" />
-        <button type="submit" class="btn btn-primary">Search</button>
-        <!-- Reset button -->
-        <a href="@Url.Action("Index", "Buildings")" class="btn btn-secondary">List All Buildings</a>
+    <div class="form-group text-center" style="margin-bottom: 15px;">
+        <div class="input-group" style="display: flex; justify-content: center; max-width: 600px; margin: 0 auto;">
+            <!-- Label for the dropdown list -->
+            <label style="align-self: center; margin-right: 10px; font-weight: bold;">Select the type of search:</label>
+            <select name="searchType" class="form-control" style="max-width: 200px; height: 35px;">
+                <option value="BuildingName">Building Name</option>
+                <option value="City">City</option>
+                <option value="OwnerId">Owner</option>
+            </select>
+            <input type="text" name="searchTerm" value="@Request.QueryString["searchTerm"]" class="form-control" placeholder="Enter search term" style="height: 35px;" />
+        </div>
+
+        <!-- Centered Buttons below the search fields -->
+        <div style="margin-top: 10px;">
+            <button type="submit" class="btn btn-primary" style="margin-right: 5px;">Search</button>
+            <a href="@Url.Action("Index", "Buildings")" class="btn btn-secondary">List All Buildings</a>
+        </div>
     </div>
 }
-<!-- Table structure similar to your Managers/Tenants layout -->
+
+<!-- Table structure for displaying buildings -->
 <table class="table">
     <thead>
         <tr>
             <th>Building Name</th>
             <th>City</th>
             <th>Date Listed</th>
+            <th>Owner</th> <!-- Display Owner's Name -->
             <th>Actions</th>
         </tr>
     </thead>
@@ -42,7 +56,18 @@
             <tr>
                 <td>@building.BuildingName</td>
                 <td>@building.City</td>
-                <td>@building.DateListed.ToString("yyyy-MM-dd")</td> <!-- Format date here -->
+                <td>@building.DateListed.ToString("yyyy-MM-dd")</td>
+                <td>
+                    @if (building.OwnerId != null)
+                    {
+                        <!-- Display owner's first and last name -->
+                        @building.User1.FirstName @building.User1.LastName
+                    }
+                    else
+                    {
+                        <span class="text-muted">No Owner Assigned</span>
+                    }
+                </td>
                 <td>
                     <a href="@Url.Action("Details", "Buildings", new { id = building.BuildingId })" class="btn btn-info">Details</a>
                     <a href="@Url.Action("Edit", "Buildings", new { id = building.BuildingId })" class="btn btn-warning">Edit</a>
@@ -54,11 +79,11 @@
 </table>
 
 <!-- Button to create a new building -->
-<p>
+<p class="text-center">
     <a href="@Url.Action("Create", "Buildings")" class="btn btn-success">Create New Building</a>
 </p>
 
 <!-- Button to go back to the dashboard -->
-<p>
+<p class="text-center">
     <a href="@Url.Action("Index", "PropertyManagerDashboard")" class="btn btn-primary">Back to Dashboard</a>
 </p>

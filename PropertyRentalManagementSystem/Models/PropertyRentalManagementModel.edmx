@@ -41,6 +41,7 @@
           <Property Name="DateListed" Type="date" Nullable="false" />
           <Property Name="PropertyManagerId" Type="int" Nullable="false" />
           <Property Name="ImagePath" Type="nvarchar" MaxLength="255" />
+          <Property Name="OwnerId" Type="int" />
         </EntityType>
         <EntityType Name="Messages">
           <Key>
@@ -188,6 +189,18 @@
             </Principal>
             <Dependent Role="Buildings">
               <PropertyRef Name="PropertyManagerId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Buildings_Users_OwnerId">
+          <End Role="Users" Type="Self.Users" Multiplicity="0..1" />
+          <End Role="Buildings" Type="Self.Buildings" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Users">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="Buildings">
+              <PropertyRef Name="OwnerId" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -383,6 +396,10 @@
             <End Role="Users" EntitySet="Users" />
             <End Role="Buildings" EntitySet="Buildings" />
           </AssociationSet>
+          <AssociationSet Name="FK_Buildings_Users_OwnerId" Association="Self.FK_Buildings_Users_OwnerId">
+            <End Role="Users" EntitySet="Users" />
+            <End Role="Buildings" EntitySet="Buildings" />
+          </AssociationSet>
           <AssociationSet Name="FK_Messages_Apartments" Association="Self.FK_Messages_Apartments">
             <End Role="Apartments" EntitySet="Apartments" />
             <End Role="Messages" EntitySet="Messages" />
@@ -486,6 +503,8 @@
           <Property Name="ImagePath" Type="String" MaxLength="255" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="Apartments" Relationship="Self.FK_Apartments_Buildings" FromRole="Buildings" ToRole="Apartments" />
           <NavigationProperty Name="User" Relationship="Self.FK_Buildings_Users" FromRole="Buildings" ToRole="Users" />
+          <Property Name="OwnerId" Type="Int32" />
+          <NavigationProperty Name="User1" Relationship="PropertyRentalManagementDBModel.FK_Buildings_Users_OwnerId" FromRole="Building" ToRole="User" />
         </EntityType>
         <EntityType Name="Message">
           <Key>
@@ -591,6 +610,7 @@
           <NavigationProperty Name="RentalAgreements" Relationship="Self.FK_RentalAgreements_Users" FromRole="Users" ToRole="RentalAgreements" />
           <NavigationProperty Name="Role" Relationship="Self.FK_Users_Roles" FromRole="Users" ToRole="Roles" />
           <NavigationProperty Name="UserRoleMappings" Relationship="Self.FK_UserRoleMappings_Users" FromRole="Users" ToRole="UserRoleMappings" />
+          <NavigationProperty Name="Buildings1" Relationship="PropertyRentalManagementDBModel.FK_Buildings_Users_OwnerId" FromRole="User" ToRole="Building" />
         </EntityType>
         <Association Name="FK_Apartments_Buildings">
           <End Role="Buildings" Type="Self.Building" Multiplicity="1" />
@@ -896,6 +916,10 @@
             <End Role="Status" EntitySet="Status" />
             <End Role="RentalAgreement" EntitySet="RentalAgreements" />
           </AssociationSet>
+          <AssociationSet Name="FK_Buildings_Users_OwnerId" Association="PropertyRentalManagementDBModel.FK_Buildings_Users_OwnerId">
+            <End Role="User" EntitySet="Users" />
+            <End Role="Building" EntitySet="Buildings" />
+          </AssociationSet>
         </EntityContainer>
         <Association Name="FK_RentalAgreements_Status">
           <End Type="PropertyRentalManagementDBModel.Status" Role="Status" Multiplicity="0..1" />
@@ -906,6 +930,18 @@
             </Principal>
             <Dependent Role="RentalAgreement">
               <PropertyRef Name="StatusId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="FK_Buildings_Users_OwnerId">
+          <End Type="PropertyRentalManagementDBModel.User" Role="User" Multiplicity="0..1" />
+          <End Type="PropertyRentalManagementDBModel.Building" Role="Building" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="User">
+              <PropertyRef Name="UserId" />
+            </Principal>
+            <Dependent Role="Building">
+              <PropertyRef Name="OwnerId" />
             </Dependent>
           </ReferentialConstraint>
         </Association>
@@ -944,6 +980,7 @@
           <EntitySetMapping Name="Buildings">
             <EntityTypeMapping TypeName="PropertyRentalManagementDBModel.Building">
               <MappingFragment StoreEntitySet="Buildings">
+                <ScalarProperty Name="OwnerId" ColumnName="OwnerId" />
                 <ScalarProperty Name="BuildingId" ColumnName="BuildingId" />
                 <ScalarProperty Name="BuildingName" ColumnName="BuildingName" />
                 <ScalarProperty Name="Address" ColumnName="Address" />

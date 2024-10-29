@@ -18,15 +18,10 @@ namespace PropertyRentalManagementSystem.Controllers
         private PropertyRentalManagementDBEntities db = new PropertyRentalManagementDBEntities();
 
         // GET: Buildings
-        public ActionResult Index(string searchTerm)
+        public ActionResult Index(string searchTerm, string searchType)
         {
-            /*
-            if (Session["UserId"] == null)
-            {
-                
-                return RedirectToAction("Login", "Account");
-            }*/
-            int userId = (int)Session["UserId"];
+
+            /*int userId = (int)Session["UserId"];
 
             var buildings = db.Buildings
                 .Where(b => b.PropertyManagerId == userId);
@@ -35,6 +30,31 @@ namespace PropertyRentalManagementSystem.Controllers
             {
                 buildings = buildings
                     .Where(b => b.BuildingName.Contains(searchTerm) || b.City.Contains(searchTerm));
+            }
+
+            return View(buildings.ToList());*/
+
+            int userId = (int)Session["UserId"];
+
+            var buildings = db.Buildings
+                .Where(b => b.PropertyManagerId == userId)
+                .Include(b => b.User1); // Include Owner data
+
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                switch (searchType)
+                {
+                    case "BuildingName":
+                        buildings = buildings.Where(b => b.BuildingName.Contains(searchTerm));
+                        break;
+                    case "City":
+                        buildings = buildings.Where(b => b.City.Contains(searchTerm));
+                        break;
+                    case "OwnerId":
+                        buildings = buildings.Where(b => b.OwnerId != null &&
+                                                         (b.User1.FirstName + " " + b.User1.LastName).Contains(searchTerm));
+                        break;
+                }
             }
 
             return View(buildings.ToList());
@@ -49,18 +69,29 @@ namespace PropertyRentalManagementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
+
+            // Find the building record first
             Building building = db.Buildings.Find(id);
             if (building == null)
             {
                 return HttpNotFound();
             }
+
+            // Load the owner details if OwnerId is present
+            if (building.OwnerId.HasValue)
+            {
+                building.OwnerId = db.Users.Find(building.OwnerId).UserId;
+            }
+
             return View(building);
         }
+
+
 
         // GET: Buildings/Create
         public ActionResult Create()
         {
-            
+            ViewBag.OwnerList = new SelectList(db.Users.Where(u => u.RoleId == 1), "UserId", "FirstName", "LastName");
             return View();
         }
 
@@ -72,7 +103,7 @@ namespace PropertyRentalManagementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(Building building, HttpPostedFileBase imageUpload)
         {
-            try
+            /*try
             {
                 
                 if (db.Buildings.Any(b => b.BuildingName == building.BuildingName))
@@ -126,6 +157,53 @@ namespace PropertyRentalManagementSystem.Controllers
                 TempData["ErrorMessage"] = "An error occurred while creating the building. " + ex.Message;
             }
 
+            return View(building);*/
+            try
+            {
+                if (db.Buildings.Any(b => b.BuildingName == building.BuildingName))
+                {
+                    TempData["ErrorMessage"] = "A building with the same name already exists. Please choose a different name.";
+                    ViewBag.OwnerId = new SelectList(db.Users.Where(u => u.RoleId == 1), "UserId", "FirstName", building.OwnerId);
+                    return View(building);
+                }
+
+                if (building.DateListed > DateTime.Today)
+                {
+                    ModelState.AddModelError("DateListed", "The Date Listed cannot be a future date.");
+                    ViewBag.OwnerId = new SelectList(db.Users.Where(u => u.RoleId == 1), "UserId", "FirstName", building.OwnerId);
+                    return View(building);
+                }
+
+                if (ModelState.IsValid)
+                {
+                    int userId = (int)Session["UserId"];
+                    building.PropertyManagerId = userId;
+
+                    if (imageUpload != null && imageUpload.ContentLength > 0)
+                    {
+                        var fileName = building.BuildingName.Replace(" ", "_") + Path.GetExtension(imageUpload.FileName);
+                        var path = Path.Combine(Server.MapPath("~/Content/Images"), fileName);
+                        imageUpload.SaveAs(path);
+                        building.ImagePath = "/Images/" + fileName;
+                    }
+                    else
+                    {
+                        building.ImagePath = "/Images/default.jpg";
+                    }
+
+                    db.Buildings.Add(building);
+                    db.SaveChanges();
+
+                    TempData["Message"] = "Building created successfully!";
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "An error occurred while creating the building. " + ex.Message;
+            }
+
+            ViewBag.OwnerId = new SelectList(db.Users.Where(u => u.RoleId == 1), "UserId", "FirstName", building.OwnerId);
             return View(building);
         }
 
@@ -134,7 +212,7 @@ namespace PropertyRentalManagementSystem.Controllers
         public ActionResult Edit(int id)
         {
 
-            int userId = (int)Session["UserId"];
+            /*int userId = (int)Session["UserId"];
 
             var building = db.Buildings.Find(id);
             if (building == null)
@@ -145,6 +223,19 @@ namespace PropertyRentalManagementSystem.Controllers
             if (building.PropertyManagerId != userId)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+            }
+
+            return View(building);*/
+
+
+            // Populate Owner list for dropdown
+            ViewBag.OwnerList = new SelectList(db.Users.Where(u => u.RoleId == 1), "UserId", "FirstName", "LastName");
+
+            // Rest of the logic for fetching the building
+            var building = db.Buildings.Find(id);
+            if (building == null)
+            {
+                return HttpNotFound();
             }
 
             return View(building);
@@ -159,7 +250,7 @@ namespace PropertyRentalManagementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Edit(Building building, HttpPostedFileBase imageUpload)
         {
-            try
+            /*try
             {
                 if (ModelState.IsValid)
                 {
@@ -224,6 +315,59 @@ namespace PropertyRentalManagementSystem.Controllers
             
             }
 
+            return View(building);*/
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    if (building.DateListed > DateTime.Today)
+                    {
+                        ModelState.AddModelError("DateListed", "The Date Listed cannot be a future date.");
+                        ViewBag.OwnerId = new SelectList(db.Users.Where(u => u.RoleId == 1), "UserId", "FirstName", building.OwnerId);
+                        return View(building);
+                    }
+
+                    int userId = (int)Session["UserId"];
+                    var buildingInDb = db.Buildings.Find(building.BuildingId);
+
+                    if (buildingInDb != null)
+                    {
+                        if (buildingInDb.PropertyManagerId != userId)
+                        {
+                            return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+                        }
+
+                        buildingInDb.BuildingName = building.BuildingName;
+                        buildingInDb.Address = building.Address;
+                        buildingInDb.City = building.City;
+                        buildingInDb.PostalCode = building.PostalCode;
+                        buildingInDb.DateListed = building.DateListed;
+                        buildingInDb.OwnerId = building.OwnerId; // Update OwnerId
+
+                        if (imageUpload != null && imageUpload.ContentLength > 0)
+                        {
+                            var fileName = building.BuildingName.Replace(" ", "_") + Path.GetExtension(imageUpload.FileName);
+                            var path = Path.Combine(Server.MapPath("~/Content/Images"), fileName);
+                            imageUpload.SaveAs(path);
+                            buildingInDb.ImagePath = "/Images/" + fileName;
+                        }
+
+                        db.SaveChanges();
+                        TempData["Message"] = "Building updated successfully!";
+                        return RedirectToAction("Index");
+                    }
+                    else
+                    {
+                        return HttpNotFound();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "An error occurred while updating the building details. " + ex.Message;
+            }
+
+            ViewBag.OwnerId = new SelectList(db.Users.Where(u => u.RoleId == 1), "UserId", "FirstName", building.OwnerId);
             return View(building);
         }
 
@@ -231,15 +375,27 @@ namespace PropertyRentalManagementSystem.Controllers
         // GET: Buildings/Delete/5
         public ActionResult Delete(int? id)
         {
+            /*  if (id == null)
+              {
+                  return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+              }
+              Building building = db.Buildings.Find(id);
+              if (building == null)
+              {
+                  return HttpNotFound();
+              }
+              return View(building);*/
             if (id == null)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Building building = db.Buildings.Find(id);
+
+            Building building = db.Buildings.Include(b => b.OwnerId).FirstOrDefault(b => b.BuildingId == id);
             if (building == null)
             {
                 return HttpNotFound();
             }
+
             return View(building);
         }
 
@@ -248,6 +404,26 @@ namespace PropertyRentalManagementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
+            /*try
+            {
+                Building building = db.Buildings.Find(id);
+                if (building == null)
+                {
+                    TempData["ErrorMessage"] = "Building not found.";
+                    return RedirectToAction("Index");
+                }
+
+                db.Buildings.Remove(building);
+                db.SaveChanges();
+
+                TempData["Message"] = "Building deleted successfully!";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "An error occurred while deleting the building. " + ex.Message;
+            }
+
+            return RedirectToAction("Index");*/
             try
             {
                 Building building = db.Buildings.Find(id);
@@ -268,6 +444,7 @@ namespace PropertyRentalManagementSystem.Controllers
             }
 
             return RedirectToAction("Index");
+
         }
 
         protected override void Dispose(bool disposing)

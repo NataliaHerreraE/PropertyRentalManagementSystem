@@ -28,9 +28,11 @@ namespace PropertyRentalManagementSystem.Models
         public System.DateTime DateListed { get; set; }
         public int PropertyManagerId { get; set; }
         public string ImagePath { get; set; }
+        public Nullable<int> OwnerId { get; set; }
     
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Apartment> Apartments { get; set; }
         public virtual User User { get; set; }
+        public virtual User User1 { get; set; }
     }
 }
