@@ -112,7 +112,16 @@ namespace PropertyRentalManagementSystem.Controllers
                 }).ToList();
 
             ViewBag.ApartmentId = new SelectList(apartments, "ApartmentId", "DisplayText");
-            ViewBag.ToUserId = new SelectList(db.Users, "UserId", "FirstName", toUserId);
+
+            // Create a SelectList for users with FirstName, LastName, and RoleName concatenated
+            var users = db.Users
+                .Select(u => new
+                {
+                    u.UserId,
+                    DisplayName = u.FirstName + " " + u.LastName + " (" + u.Role.RoleName + ")"
+                }).ToList();
+
+            ViewBag.ToUserId = new SelectList(users, "UserId", "DisplayName", toUserId);
             ViewBag.TypeId = new SelectList(db.TypeMessages, "TypeId", "TypeName");
 
             return View();
@@ -128,7 +137,7 @@ namespace PropertyRentalManagementSystem.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Set the sender ID from the logged-in user (replace "UserId" with your actual session key if different)
+                // Set the sender ID from the logged-in user
                 int fromUserId = (int)Session["UserId"];
                 message.FromUserId = fromUserId;
 
@@ -143,7 +152,7 @@ namespace PropertyRentalManagementSystem.Controllers
                 }
                 catch (System.Data.Entity.Infrastructure.DbUpdateException ex)
                 {
-                    // Log or handle the exception as needed
+                    // Handle the exception if needed
                     ModelState.AddModelError("", "An error occurred while saving the message. Ensure all required fields are valid.");
                 }
             }
@@ -156,7 +165,16 @@ namespace PropertyRentalManagementSystem.Controllers
                     DisplayText = a.AppartmentNumber + " - " + a.Building.BuildingName
                 }).ToList();
             ViewBag.ApartmentId = new SelectList(apartments, "ApartmentId", "DisplayText", message.ApartmentId);
-            ViewBag.ToUserId = new SelectList(db.Users, "UserId", "FirstName", message.ToUserId);
+
+            // Re-populate the user list with the concatenated display name
+            var users = db.Users
+                .Select(u => new
+                {
+                    u.UserId,
+                    DisplayName = u.FirstName + " " + u.LastName + " (" + u.Role.RoleName + ")"
+                }).ToList();
+
+            ViewBag.ToUserId = new SelectList(users, "UserId", "DisplayName", message.ToUserId);
             ViewBag.TypeId = new SelectList(db.TypeMessages, "TypeId", "TypeName", message.TypeId);
 
             return View(message);

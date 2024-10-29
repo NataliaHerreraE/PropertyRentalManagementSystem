@@ -91,7 +91,16 @@ namespace PropertyRentalManagementSystem.Controllers
         // GET: Buildings/Create
         public ActionResult Create()
         {
-            ViewBag.OwnerList = new SelectList(db.Users.Where(u => u.RoleId == 1), "UserId", "FirstName", "LastName");
+            ViewBag.OwnerList = new SelectList(
+                db.Users
+                    .Where(u => u.RoleId == 1)
+                    .Select(u => new {
+                        u.UserId,
+                        FullName = u.FirstName + " " + u.LastName
+                    }),
+                "UserId",
+                "FullName"
+            );
             return View();
         }
 
@@ -229,14 +238,14 @@ namespace PropertyRentalManagementSystem.Controllers
 
 
             // Populate Owner list for dropdown
-            ViewBag.OwnerList = new SelectList(db.Users.Where(u => u.RoleId == 1), "UserId", "FirstName", "LastName");
-
-            // Rest of the logic for fetching the building
-            var building = db.Buildings.Find(id);
+            Building building = db.Buildings.Find(id);
             if (building == null)
             {
                 return HttpNotFound();
             }
+
+            // Populate the owner dropdown list
+            PopulateOwnerList(building.OwnerId);
 
             return View(building);
         }
@@ -320,46 +329,49 @@ namespace PropertyRentalManagementSystem.Controllers
             {
                 if (ModelState.IsValid)
                 {
+                    // Restrict future dates for DateListed
                     if (building.DateListed > DateTime.Today)
                     {
-                        ModelState.AddModelError("DateListed", "The Date Listed cannot be a future date.");
-                        ViewBag.OwnerId = new SelectList(db.Users.Where(u => u.RoleId == 1), "UserId", "FirstName", building.OwnerId);
+                        ModelState.AddModelError("DateListed", "The Date Listed cannot be a future date. Please select today's date or an earlier date.");
+                        PopulateOwnerList(building.OwnerId);
                         return View(building);
                     }
 
                     int userId = (int)Session["UserId"];
                     var buildingInDb = db.Buildings.Find(building.BuildingId);
 
-                    if (buildingInDb != null)
-                    {
-                        if (buildingInDb.PropertyManagerId != userId)
-                        {
-                            return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
-                        }
-
-                        buildingInDb.BuildingName = building.BuildingName;
-                        buildingInDb.Address = building.Address;
-                        buildingInDb.City = building.City;
-                        buildingInDb.PostalCode = building.PostalCode;
-                        buildingInDb.DateListed = building.DateListed;
-                        buildingInDb.OwnerId = building.OwnerId; // Update OwnerId
-
-                        if (imageUpload != null && imageUpload.ContentLength > 0)
-                        {
-                            var fileName = building.BuildingName.Replace(" ", "_") + Path.GetExtension(imageUpload.FileName);
-                            var path = Path.Combine(Server.MapPath("~/Content/Images"), fileName);
-                            imageUpload.SaveAs(path);
-                            buildingInDb.ImagePath = "/Images/" + fileName;
-                        }
-
-                        db.SaveChanges();
-                        TempData["Message"] = "Building updated successfully!";
-                        return RedirectToAction("Index");
-                    }
-                    else
+                    if (buildingInDb == null)
                     {
                         return HttpNotFound();
                     }
+
+                    // Check if the current user is the Property Manager of the building
+                    if (buildingInDb.PropertyManagerId != userId)
+                    {
+                        return new HttpStatusCodeResult(HttpStatusCode.Forbidden);
+                    }
+
+                    // Update properties
+                    buildingInDb.BuildingName = building.BuildingName;
+                    buildingInDb.Address = building.Address;
+                    buildingInDb.City = building.City;
+                    buildingInDb.PostalCode = building.PostalCode;
+                    buildingInDb.DateListed = building.DateListed;
+                    buildingInDb.OwnerId = building.OwnerId; // Update the OwnerId
+
+                    // Handle image upload if a new file is uploaded
+                    if (imageUpload != null && imageUpload.ContentLength > 0)
+                    {
+                        var fileName = building.BuildingName.Replace(" ", "_") + Path.GetExtension(imageUpload.FileName);
+                        var path = Path.Combine(Server.MapPath("~/Content/Images"), fileName);
+                        imageUpload.SaveAs(path);
+                        buildingInDb.ImagePath = "/Images/" + fileName;
+                    }
+
+                    // Save changes to the database
+                    db.SaveChanges();
+                    TempData["Message"] = "Building updated successfully!";
+                    return RedirectToAction("Index");
                 }
             }
             catch (Exception ex)
@@ -367,8 +379,26 @@ namespace PropertyRentalManagementSystem.Controllers
                 TempData["ErrorMessage"] = "An error occurred while updating the building details. " + ex.Message;
             }
 
-            ViewBag.OwnerId = new SelectList(db.Users.Where(u => u.RoleId == 1), "UserId", "FirstName", building.OwnerId);
+            // Repopulate the owner dropdown list if ModelState is invalid
+            PopulateOwnerList(building.OwnerId);
             return View(building);
+        }
+
+        // Helper method to populate the Owner list
+        private void PopulateOwnerList(int? selectedOwnerId = null)
+        {
+            ViewBag.OwnerList = new SelectList(
+                db.Users
+                    .Where(u => u.Role != null && u.Role.RoleName == "Property Owner")
+                    .Select(u => new
+                    {
+                        u.UserId,
+                        FullName = u.FirstName + " " + u.LastName
+                    }),
+                "UserId",
+                "FullName",
+                selectedOwnerId
+            );
         }
 
 

@@ -60,14 +60,14 @@
                 <td>
                     @if (building.OwnerId != null)
                     {
-                        <!-- Display owner's first and last name -->
-                        @building.User1.FirstName @building.User1.LastName
+                        @($"{building.User1.FirstName} {building.User1.LastName}")
                     }
                     else
                     {
                         <span class="text-muted">No Owner Assigned</span>
                     }
                 </td>
+
                 <td>
                     <a href="@Url.Action("Details", "Buildings", new { id = building.BuildingId })" class="btn btn-info">Details</a>
                     <a href="@Url.Action("Edit", "Buildings", new { id = building.BuildingId })" class="btn btn-warning">Edit</a>
