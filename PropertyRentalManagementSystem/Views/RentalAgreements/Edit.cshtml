@@ -1,61 +1,70 @@
 ﻿@model PropertyRentalManagementSystem.Models.RentalAgreement
 
 @{
-    ViewBag.Title = "Edit";
+    ViewBag.Title = "Edit Rental Agreement";
 }
 
-<h2>Edit</h2>
+<h2 class="dashboard-title">Edit Rental Agreement</h2>
 
-@using (Html.BeginForm())
+<!-- Form for Editing StartDate and EndDate -->
+@using (Html.BeginForm("Edit", "RentalAgreements", FormMethod.Post))
 {
     @Html.AntiForgeryToken()
-    
-    <div class="form-horizontal">
-        <h4>RentalAgreement</h4>
-        <hr />
-        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
-        @Html.HiddenFor(model => model.AgreementId)
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.ApartmentId, "ApartmentId", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("ApartmentId", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.ApartmentId, "", new { @class = "text-danger" })
-            </div>
-        </div>
+<div class="apartment-details-card">
+    <!-- Add a hidden field for AgreementId to pass it back on form submission -->
+    @Html.HiddenFor(model => model.AgreementId)
 
-        <div class="form-group">
-            @Html.LabelFor(model => model.TenantId, "TenantId", htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.DropDownList("TenantId", null, htmlAttributes: new { @class = "form-control" })
-                @Html.ValidationMessageFor(model => model.TenantId, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.StartDate, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.StartDate, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.StartDate, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            @Html.LabelFor(model => model.EndDate, htmlAttributes: new { @class = "control-label col-md-2" })
-            <div class="col-md-10">
-                @Html.EditorFor(model => model.EndDate, new { htmlAttributes = new { @class = "form-control" } })
-                @Html.ValidationMessageFor(model => model.EndDate, "", new { @class = "text-danger" })
-            </div>
-        </div>
-
-        <div class="form-group">
-            <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Save" class="btn btn-default" />
-            </div>
-        </div>
+    <!-- Non-editable Fields -->
+    <div class="agreement-status">
+        <h4>Status: @Model.Status.StatusName</h4>
     </div>
+    <div class="form-group">
+        <label>Tenant Name:</label>
+        <p>@Model.User.FirstName @Model.User.LastName</p>
+    </div>
+    <div class="form-group">
+        <label>Building:</label>
+        <p>@Model.Apartment.Building.BuildingName</p>
+    </div>
+    <div class="form-group">
+        <label>Apartment:</label>
+        <p>Apartment @Model.Apartment.AppartmentNumber</p>
+    </div>
+    <div class="form-group">
+        <label>Agreement ID:</label>
+        <p>@Model.AgreementId</p>
+    </div>
+
+    <!-- Editable Fields -->
+    <div class="form-group">
+        <label for="StartDate">Start Date:</label>
+        @Html.TextBoxFor(model => model.StartDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+        @Html.ValidationMessageFor(model => model.StartDate, "", new { @class = "text-danger" })
+    </div>
+
+    <div class="form-group">
+        <label for="EndDate">End Date:</label>
+        @Html.TextBoxFor(model => model.EndDate, "{0:yyyy-MM-dd}", new { @class = "form-control", type = "date" })
+        @Html.ValidationMessageFor(model => model.EndDate, "", new { @class = "text-danger" })
+    </div>
+
+    <!-- Buttons for Status Update and Cancellation -->
+    <div class="details-actions mb-3">
+        <button type="button" onclick="location.href='@Url.Action("UpdateStatusByDate", "RentalAgreements", new { id = Model.AgreementId })'" class="btn btn-success">
+            Update Status Based on Date
+        </button>
+        <button type="button" onclick="location.href='@Url.Action("CancelAgreement", "RentalAgreements", new { id = Model.AgreementId })'" class="btn btn-danger">
+            Cancel Agreement
+        </button>
+    </div>
+
+    <!-- Save Changes Button -->
+    <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+</div>
 }
 
-<div>
-    @Html.ActionLink("Back to List", "Index")
+<!-- Back to Index Button -->
+<div class="details-actions mt-4">
+    <a href="@Url.Action("Index", "RentalAgreements")" class="btn btn-secondary">Back to List</a>
 </div>

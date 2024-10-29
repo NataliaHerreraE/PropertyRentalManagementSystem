@@ -2,37 +2,58 @@
 
 @{
     ViewBag.Title = "Rental Agreement Details";
-    bool isActive = Model.EndDate >= DateTime.Today;
 }
 
 <h2 class="dashboard-title">Rental Agreement Details</h2>
 
 <div class="apartment-details-card">
-    <!-- Status Indicator -->
-    <div class="apartment-info">
-        <h3>Status: @(isActive ? "Active" : "Inactive")</h3>
+    <!-- Display Agreement Status -->
+    <div class="agreement-status">
+        <h4>Status: @Model.Status.StatusName</h4>
     </div>
 
-    <!-- Agreement Information -->
-    <div class="apartment-info">
-        <h4>Tenant Name:</h4>
-        <p>@Model.User.FirstName @Model.User.LastName</p>
+    <!-- Agreement Details Section with Dark Blue Styling -->
+    <div class="apartment-info" style=" color: #ffffff; padding: 10px; border-radius: 8px; margin-top: 2px;">
+       
 
-        <h4>Agreement Dates:</h4>
-        <p><strong>Start Date:</strong> @Model.StartDate.ToString("yyyy-MM-dd")</p>
-        <p><strong>End Date:</strong> @Model.EndDate.ToString("yyyy-MM-dd")</p>
+        <!-- Tenant Name -->
+        <div class="detail-row">
+            <strong>Tenant Name:</strong> @Model.User.FirstName @Model.User.LastName
+        </div>
 
-        <h4>Location Details:</h4>
-        <p><strong>Building:</strong> @Model.Apartment.Building.BuildingName</p>
-        <p><strong>Apartment:</strong> Apartment @Model.Apartment.AppartmentNumber</p>
+        <!-- Agreement Dates -->
+        <div class="detail-row">
+            <strong>Start Date:</strong> @Model.StartDate.ToString("yyyy-MM-dd")
+        </div>
+        <div class="detail-row">
+            <strong>End Date:</strong> @Model.EndDate.ToString("yyyy-MM-dd")
+        </div>
 
-        <h4>Additional Information:</h4>
-        <p><strong>Agreement ID:</strong> @Model.AgreementId</p>
-    </div>
+        <!-- Building and Apartment -->
+        <div class="detail-row">
+            <strong>Building:</strong> @Model.Apartment.Building.BuildingName
+        </div>
+        <div class="detail-row">
+            <strong>Apartment:</strong> Apartment @Model.Apartment.AppartmentNumber
+        </div>
 
-    <!-- Action Buttons -->
-    <div class="details-actions">
-        @Html.ActionLink("Edit Agreement", "Edit", new { id = Model.AgreementId }, new { @class = "btn btn-warning" })
-        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
+        <!-- Agreement ID -->
+        <div class="detail-row">
+            <strong>Agreement ID:</strong> @Model.AgreementId
+        </div>
+
     </div>
 </div>
+
+<!-- Action Buttons -->
+<div class="details-actions mt-4">
+    <a href="@Url.Action("Edit", "RentalAgreements", new { id = Model.AgreementId })" class="btn btn-warning">Edit Agreement</a>
+    <a href="@Url.Action("Index", "RentalAgreements")" class="btn btn-primary">Back to List</a>
+</div>
+
+<style>
+    /* Styling for individual rows in the details section */
+    .detail-row {
+        margin-bottom: 10px;
+    }
+</style>

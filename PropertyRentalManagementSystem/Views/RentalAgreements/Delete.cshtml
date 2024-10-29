@@ -1,56 +1,46 @@
 ﻿@model PropertyRentalManagementSystem.Models.RentalAgreement
 
 @{
-    ViewBag.Title = "Delete";
+    ViewBag.Title = "Delete Rental Agreement";
 }
 
-<h2>Delete</h2>
+<h2 class="dashboard-title">Delete Rental Agreement</h2>
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>RentalAgreement</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.StartDate)
-        </dt>
+<div class="apartment-details-card">
+    <p>Are you sure you want to delete this rental agreement?</p>
 
-        <dd>
-            @Html.DisplayFor(model => model.StartDate)
-        </dd>
+    <!-- Display Agreement Details in a Read-only Format -->
+    <div class="agreement-info">
+        <h4>Agreement Information</h4>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.EndDate)
-        </dt>
+        <!-- Tenant Name -->
+        <p><strong>Tenant Name:</strong> @Model.User.FirstName @Model.User.LastName</p>
 
-        <dd>
-            @Html.DisplayFor(model => model.EndDate)
-        </dd>
+        <!-- Agreement Dates -->
+        <p><strong>Start Date:</strong> @Model.StartDate.ToString("yyyy-MM-dd")</p>
+        <p><strong>End Date:</strong> @Model.EndDate.ToString("yyyy-MM-dd")</p>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Apartment.AppartmentNumber)
-        </dt>
+        <!-- Building and Apartment -->
+        <p><strong>Building:</strong> @Model.Apartment.Building.BuildingName</p>
+        <p><strong>Apartment:</strong> Apartment @Model.Apartment.AppartmentNumber</p>
 
-        <dd>
-            @Html.DisplayFor(model => model.Apartment.AppartmentNumber)
-        </dd>
+        <!-- Agreement ID and Status -->
+        <p><strong>Agreement ID:</strong> @Model.AgreementId</p>
+        <p><strong>Status:</strong> @Model.Status.StatusName</p>
+    </div>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.User.FirstName)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.User.FirstName)
-        </dd>
-
-    </dl>
-
-    @using (Html.BeginForm()) {
+    <!-- Delete Confirmation Form -->
+    @using (Html.BeginForm("Delete", "RentalAgreements", FormMethod.Post))
+    {
         @Html.AntiForgeryToken()
+        @Html.HiddenFor(model => model.AgreementId)
 
-        <div class="form-actions no-color">
-            <input type="submit" value="Delete" class="btn btn-default" /> |
-            @Html.ActionLink("Back to List", "Index")
-        </div>
+        <button type="submit" class="btn btn-danger mt-3">Confirm Delete</button>
+        <a href="@Url.Action("Index", "RentalAgreements")" class="btn btn-secondary mt-3">Cancel</a>
     }
+</div>
+
+<!-- Back to Index Button -->
+<div class="details-actions mt-4">
+    <a href="@Url.Action("Index", "RentalAgreements")" class="btn btn-primary">Back to List</a>
 </div>

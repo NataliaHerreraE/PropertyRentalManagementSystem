@@ -15,35 +15,48 @@ namespace PropertyRentalManagementSystem.Controllers
         private PropertyRentalManagementDBEntities db = new PropertyRentalManagementDBEntities();
 
         // GET: RentalAgreements
-        public ActionResult Index(string tenantSearch, string buildingOrApartmentSearch)
+        public ActionResult Index(string tenantSearch, string buildingOrApartmentSearch, int? statusId)
         {
             int userId = (int)Session["UserId"];
 
-            // Query to fetch rental agreements managed by the logged-in property manager
-            var rentalAgreements = db.RentalAgreements
-                .Include(r => r.Apartment)
-                .Include(r => r.Apartment.Building)
-                .Include(r => r.User) // Tenant information
-                .Where(r => r.Apartment.Building.PropertyManagerId == userId);
+            var agreements = db.RentalAgreements
+                .Include(ra => ra.Status)
+                .Include(ra => ra.Apartment)
+                .Include(ra => ra.Apartment.Building)
+                .Include(ra => ra.User)
+                .Where(ra => ra.Apartment.Building.PropertyManagerId == userId);
 
-            // Determine active and inactive rental agreements
-            DateTime today = DateTime.Today;
-            ViewBag.ActiveAgreementsCount = rentalAgreements.Count(r => r.EndDate >= today);
-            ViewBag.InactiveAgreementsCount = rentalAgreements.Count(r => r.EndDate < today);
-
-            // Apply filters
+            // Filter by tenant name
             if (!string.IsNullOrEmpty(tenantSearch))
             {
-                rentalAgreements = rentalAgreements.Where(r => (r.User.FirstName + " " + r.User.LastName).Contains(tenantSearch));
-            }
-            if (!string.IsNullOrEmpty(buildingOrApartmentSearch))
-            {
-                rentalAgreements = rentalAgreements.Where(r => r.Apartment.Building.BuildingName.Contains(buildingOrApartmentSearch) ||
-                                                               r.Apartment.AppartmentNumber.Contains(buildingOrApartmentSearch));
+                agreements = agreements.Where(ra => (ra.User.FirstName + " " + ra.User.LastName).Contains(tenantSearch));
             }
 
-            return View(rentalAgreements.ToList());
+            // Filter by building or apartment number
+            if (!string.IsNullOrEmpty(buildingOrApartmentSearch))
+            {
+                agreements = agreements.Where(ra => ra.Apartment.Building.BuildingName.Contains(buildingOrApartmentSearch) ||
+                                                     ra.Apartment.AppartmentNumber.ToString().Contains(buildingOrApartmentSearch));
+            }
+
+            // Filter by status
+            if (statusId.HasValue)
+            {
+                agreements = agreements.Where(ra => ra.StatusId == statusId.Value);
+            }
+
+            // Count active, inactive, and cancelled agreements
+            ViewBag.ActiveAgreementsCount = agreements.Count(ra => ra.Status.StatusName == "Active");
+            ViewBag.InactiveAgreementsCount = agreements.Count(ra => ra.Status.StatusName == "Inactive");
+            ViewBag.CancelledAgreementsCount = agreements.Count(ra => ra.Status.StatusName == "Cancelled");
+
+            // Populate the status dropdown list with Active, Inactive, and Cancelled only
+            ViewBag.StatusOptions = new SelectList(db.Status.Where(s => s.StatusName == "Active" || s.StatusName == "Inactive" || s.StatusName == "Cancelled"),
+                                                   "StatusId", "StatusName", statusId);
+
+            return View(agreements.ToList());
         }
+
 
         // GET: RentalAgreements/Details/5
         public ActionResult Details(int? id)
@@ -52,19 +65,45 @@ namespace PropertyRentalManagementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            RentalAgreement rentalAgreement = db.RentalAgreements.Find(id);
-            if (rentalAgreement == null)
+
+            // Include the related Apartment, Building, User (Tenant), and Status information
+            RentalAgreement agreement = db.RentalAgreements
+                .Include(a => a.Apartment)
+                .Include(a => a.Apartment.Building)
+                .Include(a => a.User) // Assuming this represents the tenant
+                .Include(a => a.Status) // Ensure Status is included
+                .FirstOrDefault(a => a.AgreementId == id);
+
+            if (agreement == null)
             {
                 return HttpNotFound();
             }
-            return View(rentalAgreement);
+
+            return View(agreement);
         }
+
 
         // GET: RentalAgreements/Create
         public ActionResult Create()
         {
-            ViewBag.ApartmentId = new SelectList(db.Apartments, "ApartmentId", "AppartmentNumber");
-            ViewBag.TenantId = new SelectList(db.Users, "UserId", "FirstName");
+            // Load Tenants (Users with RoleId = 4)
+            ViewBag.TenantId = new SelectList(db.Users
+                .Where(u => u.RoleId == 4) // Adjust RoleId based on your requirement for tenants
+                .Select(u => new
+                {
+                    UserId = u.UserId,
+                    FullName = u.FirstName + " " + u.LastName
+                }), "UserId", "FullName");
+
+            // Load Apartments with Building Info
+            ViewBag.ApartmentId = new SelectList(db.Apartments
+                .Include(a => a.Building) // Ensure Building data is loaded
+                .Select(a => new
+                {
+                    ApartmentId = a.ApartmentId,
+                    Display = a.Building.BuildingName + " - Apt " + a.AppartmentNumber
+                }), "ApartmentId", "Display");
+
             return View();
         }
 
@@ -73,54 +112,138 @@ namespace PropertyRentalManagementSystem.Controllers
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "AgreementId,ApartmentId,TenantId,StartDate,EndDate")] RentalAgreement rentalAgreement)
+        public ActionResult Create(RentalAgreement agreement)
         {
             if (ModelState.IsValid)
             {
-                db.RentalAgreements.Add(rentalAgreement);
+                // Set the Status based on EndDate
+                var today = DateTime.Today;
+                agreement.StatusId = agreement.EndDate >= today
+                    ? db.Status.FirstOrDefault(s => s.StatusName == "Active").StatusId
+                    : db.Status.FirstOrDefault(s => s.StatusName == "Inactive").StatusId;
+
+                db.RentalAgreements.Add(agreement);
                 db.SaveChanges();
+                TempData["SuccessMessage"] = "Rental Agreement created successfully.";
                 return RedirectToAction("Index");
             }
 
-            ViewBag.ApartmentId = new SelectList(db.Apartments, "ApartmentId", "AppartmentNumber", rentalAgreement.ApartmentId);
-            ViewBag.TenantId = new SelectList(db.Users, "UserId", "FirstName", rentalAgreement.TenantId);
-            return View(rentalAgreement);
+            // Reload necessary data if the ModelState is not valid
+            ViewBag.TenantId = new SelectList(db.Users
+                .Where(u => u.RoleId == 4)
+                .Select(u => new
+                {
+                    UserId = u.UserId,
+                    FullName = u.FirstName + " " + u.LastName
+                }), "UserId", "FullName");
+
+            ViewBag.ApartmentId = new SelectList(db.Apartments
+                .Include(a => a.Building)
+                .Select(a => new
+                {
+                    ApartmentId = a.ApartmentId,
+                    Display = a.Building.BuildingName + " - Apt " + a.AppartmentNumber
+                }), "ApartmentId", "Display");
+
+            TempData["ErrorMessage"] = "There was an error creating the rental agreement.";
+            return View(agreement);
         }
 
-        // GET: RentalAgreements/Edit/5
-        public ActionResult Edit(int? id)
+        public ActionResult Edit(int id)
         {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            RentalAgreement rentalAgreement = db.RentalAgreements.Find(id);
+            var rentalAgreement = db.RentalAgreements
+                                    .Include(r => r.Apartment)
+                                    .Include(r => r.User)
+                                    .FirstOrDefault(r => r.AgreementId == id);
+
             if (rentalAgreement == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.ApartmentId = new SelectList(db.Apartments, "ApartmentId", "AppartmentNumber", rentalAgreement.ApartmentId);
-            ViewBag.TenantId = new SelectList(db.Users, "UserId", "FirstName", rentalAgreement.TenantId);
+
             return View(rentalAgreement);
         }
 
-        // POST: RentalAgreements/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "AgreementId,ApartmentId,TenantId,StartDate,EndDate")] RentalAgreement rentalAgreement)
+        public ActionResult Edit(RentalAgreement rentalAgreement)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(rentalAgreement).State = EntityState.Modified;
+                // Fetch the current agreement from the database
+                var currentAgreement = db.RentalAgreements.Include(a => a.Status).FirstOrDefault(a => a.AgreementId == rentalAgreement.AgreementId);
+                if (currentAgreement == null)
+                {
+                    TempData["ErrorMessage"] = "Rental Agreement not found.";
+                    return RedirectToAction("Index");
+                }
+
+                // Update the EndDate and Status based on the new EndDate
+                currentAgreement.EndDate = rentalAgreement.EndDate;
+
+                // Check the EndDate to update the Status
+                if (currentAgreement.EndDate >= DateTime.Today)
+                {
+                    currentAgreement.StatusId = db.Status.FirstOrDefault(s => s.StatusName == "Active")?.StatusId ?? currentAgreement.StatusId;
+                }
+                else
+                {
+                    currentAgreement.StatusId = db.Status.FirstOrDefault(s => s.StatusName == "InActive")?.StatusId ?? currentAgreement.StatusId;
+                }
+
                 db.SaveChanges();
+                TempData["SuccessMessage"] = "Rental Agreement updated successfully!";
                 return RedirectToAction("Index");
             }
-            ViewBag.ApartmentId = new SelectList(db.Apartments, "ApartmentId", "AppartmentNumber", rentalAgreement.ApartmentId);
-            ViewBag.TenantId = new SelectList(db.Users, "UserId", "FirstName", rentalAgreement.TenantId);
+
+            TempData["ErrorMessage"] = "There was an issue updating the rental agreement. Please check your inputs.";
             return View(rentalAgreement);
         }
+
+
+
+
+        public ActionResult UpdateStatusByDate(int id)
+        {
+            var agreement = db.RentalAgreements.Find(id);
+            if (agreement == null)
+            {
+                TempData["ErrorMessage"] = "Rental Agreement not found.";
+                return RedirectToAction("Index");
+            }
+
+            if (agreement.EndDate >= DateTime.Today)
+            {
+                agreement.StatusId = db.Status.FirstOrDefault(s => s.StatusName == "Active").StatusId;
+            }
+            else
+            {
+                agreement.StatusId = db.Status.FirstOrDefault(s => s.StatusName == "Inactive").StatusId;
+            }
+
+            db.SaveChanges();
+            TempData["SuccessMessage"] = "Status updated based on date.";
+            return RedirectToAction("Edit", new { id = agreement.AgreementId });
+        }
+
+        public ActionResult CancelAgreement(int id)
+        {
+            var agreement = db.RentalAgreements.Find(id);
+            if (agreement == null)
+            {
+                TempData["ErrorMessage"] = "Rental Agreement not found.";
+                return RedirectToAction("Index");
+            }
+
+            agreement.StatusId = db.Status.FirstOrDefault(s => s.StatusName == "Cancelled").StatusId;
+
+            db.SaveChanges();
+            TempData["SuccessMessage"] = "Rental Agreement cancelled successfully.";
+            return RedirectToAction("Edit", new { id = agreement.AgreementId });
+        }
+
+
+
 
         // GET: RentalAgreements/Delete/5
         public ActionResult Delete(int? id)
@@ -129,12 +252,21 @@ namespace PropertyRentalManagementSystem.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            RentalAgreement rentalAgreement = db.RentalAgreements.Find(id);
-            if (rentalAgreement == null)
+
+            // Fetch the RentalAgreement with related Apartment, Building, and Tenant details
+            RentalAgreement agreement = db.RentalAgreements
+                .Include(a => a.Apartment)
+                .Include(a => a.Apartment.Building)
+                .Include(a => a.User) // Assuming this represents the tenant
+                .FirstOrDefault(a => a.AgreementId == id);
+
+            if (agreement == null)
             {
-                return HttpNotFound();
+                TempData["ErrorMessage"] = "Rental Agreement not found.";
+                return RedirectToAction("Index");
             }
-            return View(rentalAgreement);
+
+            return View(agreement);
         }
 
         // POST: RentalAgreements/Delete/5
@@ -142,11 +274,28 @@ namespace PropertyRentalManagementSystem.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            RentalAgreement rentalAgreement = db.RentalAgreements.Find(id);
-            db.RentalAgreements.Remove(rentalAgreement);
+            RentalAgreement agreement = db.RentalAgreements.Find(id);
+            if (agreement == null)
+            {
+                TempData["ErrorMessage"] = "Rental Agreement not found.";
+                return RedirectToAction("Index");
+            }
+
+            // Check if there are any payments associated with this rental agreement
+            bool hasPayments = db.Payments.Any(p => p.AgreementId == id);
+            if (hasPayments)
+            {
+                TempData["ErrorMessage"] = "An existing agreement with payments cannot be deleted. You can cancel this agreement if you want to discontinue it.";
+                return RedirectToAction("Index");
+            }
+
+            db.RentalAgreements.Remove(agreement);
             db.SaveChanges();
+            TempData["SuccessMessage"] = "Rental Agreement deleted successfully.";
             return RedirectToAction("Index");
         }
+
+
 
         protected override void Dispose(bool disposing)
         {

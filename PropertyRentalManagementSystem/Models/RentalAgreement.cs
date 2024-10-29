@@ -25,10 +25,12 @@ namespace PropertyRentalManagementSystem.Models
         public int TenantId { get; set; }
         public System.DateTime StartDate { get; set; }
         public System.DateTime EndDate { get; set; }
+        public Nullable<int> StatusId { get; set; }
     
         public virtual Apartment Apartment { get; set; }
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Payment> Payments { get; set; }
         public virtual User User { get; set; }
+        public virtual Status Status { get; set; }
     }
 }

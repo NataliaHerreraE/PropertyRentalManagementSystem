@@ -34,6 +34,7 @@
         <AssociationConnector Association="PropertyRentalManagementDBModel.FK_UserRoleMappings_Roles" ManuallyRouted="false" />
         <AssociationConnector Association="PropertyRentalManagementDBModel.FK_Users_Roles" ManuallyRouted="false" />
         <AssociationConnector Association="PropertyRentalManagementDBModel.FK_UserRoleMappings_Users" ManuallyRouted="false" />
+        <AssociationConnector Association="PropertyRentalManagementDBModel.FK_RentalAgreements_Status" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

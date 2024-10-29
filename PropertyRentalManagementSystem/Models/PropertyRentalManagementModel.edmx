@@ -76,6 +76,7 @@
           <Property Name="TenantId" Type="int" Nullable="false" />
           <Property Name="StartDate" Type="date" Nullable="false" />
           <Property Name="EndDate" Type="date" Nullable="false" />
+          <Property Name="StatusId" Type="int" />
         </EntityType>
         <EntityType Name="Roles">
           <Key>
@@ -286,6 +287,18 @@
             </Dependent>
           </ReferentialConstraint>
         </Association>
+        <Association Name="FK_RentalAgreements_Status">
+          <End Role="Status" Type="Self.Status" Multiplicity="0..1" />
+          <End Role="RentalAgreements" Type="Self.RentalAgreements" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Status">
+              <PropertyRef Name="StatusId" />
+            </Principal>
+            <Dependent Role="RentalAgreements">
+              <PropertyRef Name="StatusId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
         <Association Name="FK_RentalAgreements_Users">
           <End Role="Users" Type="Self.Users" Multiplicity="1" />
           <End Role="RentalAgreements" Type="Self.RentalAgreements" Multiplicity="*" />
@@ -402,6 +415,10 @@
             <End Role="Apartments" EntitySet="Apartments" />
             <End Role="RentalAgreements" EntitySet="RentalAgreements" />
           </AssociationSet>
+          <AssociationSet Name="FK_RentalAgreements_Status" Association="Self.FK_RentalAgreements_Status">
+            <End Role="Status" EntitySet="Status" />
+            <End Role="RentalAgreements" EntitySet="RentalAgreements" />
+          </AssociationSet>
           <AssociationSet Name="FK_RentalAgreements_Users" Association="Self.FK_RentalAgreements_Users">
             <End Role="Users" EntitySet="Users" />
             <End Role="RentalAgreements" EntitySet="RentalAgreements" />
@@ -514,6 +531,8 @@
           <NavigationProperty Name="Apartment" Relationship="Self.FK_RentalAgreements_Apartments" FromRole="RentalAgreements" ToRole="Apartments" />
           <NavigationProperty Name="Payments" Relationship="Self.FK_Payments_Agreement" FromRole="RentalAgreements" ToRole="Payments" />
           <NavigationProperty Name="User" Relationship="Self.FK_RentalAgreements_Users" FromRole="RentalAgreements" ToRole="Users" />
+          <Property Name="StatusId" Type="Int32" />
+          <NavigationProperty Name="Status" Relationship="PropertyRentalManagementDBModel.FK_RentalAgreements_Status" FromRole="RentalAgreement" ToRole="Status" />
         </EntityType>
         <EntityType Name="Role">
           <Key>
@@ -533,6 +552,7 @@
           <NavigationProperty Name="Apartments" Relationship="Self.FK_Apartments_Status" FromRole="Status" ToRole="Apartments" />
           <NavigationProperty Name="Appointments" Relationship="Self.FK_Appointments_Status" FromRole="Status" ToRole="Appointments" />
           <NavigationProperty Name="Payments" Relationship="Self.FK_Payments_Status" FromRole="Status" ToRole="Payments" />
+          <NavigationProperty Name="RentalAgreements" Relationship="PropertyRentalManagementDBModel.FK_RentalAgreements_Status" FromRole="Status" ToRole="RentalAgreement" />
         </EntityType>
         <EntityType Name="TypeMessage">
           <Key>
@@ -872,7 +892,23 @@
             <End Role="Users" EntitySet="Users" />
             <End Role="UserRoleMappings" EntitySet="UserRoleMappings" />
           </AssociationSet>
+          <AssociationSet Name="FK_RentalAgreements_Status" Association="PropertyRentalManagementDBModel.FK_RentalAgreements_Status">
+            <End Role="Status" EntitySet="Status" />
+            <End Role="RentalAgreement" EntitySet="RentalAgreements" />
+          </AssociationSet>
         </EntityContainer>
+        <Association Name="FK_RentalAgreements_Status">
+          <End Type="PropertyRentalManagementDBModel.Status" Role="Status" Multiplicity="0..1" />
+          <End Type="PropertyRentalManagementDBModel.RentalAgreement" Role="RentalAgreement" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Status">
+              <PropertyRef Name="StatusId" />
+            </Principal>
+            <Dependent Role="RentalAgreement">
+              <PropertyRef Name="StatusId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
       </Schema>
     </edmx:ConceptualModels>
     <!-- C-S mapping content -->
@@ -949,6 +985,7 @@
           <EntitySetMapping Name="RentalAgreements">
             <EntityTypeMapping TypeName="PropertyRentalManagementDBModel.RentalAgreement">
               <MappingFragment StoreEntitySet="RentalAgreements">
+                <ScalarProperty Name="StatusId" ColumnName="StatusId" />
                 <ScalarProperty Name="AgreementId" ColumnName="AgreementId" />
                 <ScalarProperty Name="ApartmentId" ColumnName="ApartmentId" />
                 <ScalarProperty Name="TenantId" ColumnName="TenantId" />
