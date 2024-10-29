@@ -1,0 +1,121 @@
+﻿@model PropertyRentalManagementSystem.Models.Payment
+
+@{
+    ViewBag.Title = "Payment Details";
+}
+
+<h2>Payment Details</h2>
+
+<div class="container mt-4">
+    <div class="card bg-dark text-white p-4">
+        <!-- Payment Information -->
+        <h3>Payment Information</h3>
+        <hr class="bg-secondary" />
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Amount:</strong>
+            </div>
+            <div class="col-md-8">
+                @Model.Amount.ToString("C") <!-- Format as currency -->
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Method of Payment:</strong>
+            </div>
+            <div class="col-md-8">
+                @Model.MethodOfPayment
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Date Paid:</strong>
+            </div>
+            <div class="col-md-8">
+                @Model.DatePaid?.ToString("yyyy-MM-dd")
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Status:</strong>
+            </div>
+            <div class="col-md-8">
+                @Model.Status.StatusName
+            </div>
+        </div>
+
+        <!-- Tenant Information -->
+        <h3 class="mt-4">Tenant Information</h3>
+        <hr class="bg-secondary" />
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Tenant Name:</strong>
+            </div>
+            <div class="col-md-8">
+                @Model.User.FirstName @Model.User.LastName
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Email:</strong>
+            </div>
+            <div class="col-md-8">
+                @Model.User.Email
+            </div>
+        </div>
+
+        <!-- Agreement and Apartment Information -->
+        <h3 class="mt-4">Agreement & Property Information</h3>
+        <hr class="bg-secondary" />
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Agreement ID:</strong>
+            </div>
+            <div class="col-md-8">
+                @Model.AgreementId
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Start Date:</strong>
+            </div>
+            <div class="col-md-8">
+                @Model.RentalAgreement.StartDate.ToString("yyyy-MM-dd")
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>End Date:</strong>
+            </div>
+            <div class="col-md-8">
+                @Model.RentalAgreement.EndDate.ToString("yyyy-MM-dd")
+            </div>
+        </div>
+
+        <!-- Building & Apartment Information -->
+        <h3 class="mt-4">Building & Apartment</h3>
+        <hr class="bg-secondary" />
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Building:</strong>
+            </div>
+            <div class="col-md-8">
+                @Model.RentalAgreement.Apartment.Building.BuildingName
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <strong>Apartment:</strong>
+            </div>
+            <div class="col-md-8">
+                Apt @Model.RentalAgreement.Apartment.AppartmentNumber
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Button to go back to the payments list -->
+<div class="mt-4">
+    <a href="@Url.Action("Edit", "Payments", new { id = Model.PaymentId })" class="btn btn-warning">Edit</a> <!-- Edit Button -->
+    <a href="@Url.Action("Index", "Payments")" class="btn btn-primary">Back to Payments List</a>
+</div>

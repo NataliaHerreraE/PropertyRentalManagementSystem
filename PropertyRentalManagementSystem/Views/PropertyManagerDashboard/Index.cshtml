@@ -9,7 +9,7 @@
 </p>
 
 <p class="instruction-text">
-    Select an option below to manage buildings, apartments, appointments, and messages.
+    Select an option below to manage buildings, apartments, appointments, messages, payments, rental agreements.
 </p>
 
 <div class="container">
@@ -50,6 +50,25 @@
                 <h2>@ViewBag.UnreadMessagesCount</h2> <!-- Display the unread message count -->
             </div>
             <a href="@Url.Action("Index", "Messages")" class="btn btn-dark mt-2">Manage Messages</a>
+        </div>
+
+        <!-- Total Payments -->
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>Total Payments</h3>
+                <h2>@ViewBag.TotalPayments</h2>
+            </div>
+            <a href="@Url.Action("Index", "Payments")" class="btn btn-dark mt-2">Manage Payments</a>
+        </div>
+
+
+        <!-- Total Rental Agreements -->
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>Total Rental Agreements</h3>
+                <h2>@ViewBag.RentalAgreementCount</h2>
+            </div>
+            <a href="@Url.Action("Index", "RentalAgreements")" class="btn btn-dark mt-2">Manage Agreements</a>
         </div>
 
 

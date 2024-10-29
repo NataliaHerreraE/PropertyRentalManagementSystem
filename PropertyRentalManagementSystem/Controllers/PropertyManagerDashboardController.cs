@@ -56,6 +56,14 @@ namespace PropertyRentalManagementSystem.Controllers
             ViewBag.UpcomingAppointmentsCount = upcomingPendingAppointmentsCount;
             ViewBag.UnreadMessagesCount = unreadMessagesCount;
 
+            // Total Payments related to the Property Manager's Rental Agreements
+            ViewBag.TotalPayments = db.Payments
+                .Count(p => p.RentalAgreement.Apartment.Building.PropertyManagerId == userId);
+
+            // Total Rental Agreements related to the Property Manager's Buildings
+            ViewBag.TotalAgreements = db.RentalAgreements
+                .Count(r => r.Apartment.Building.PropertyManagerId == userId);
+
 
             return View();
 

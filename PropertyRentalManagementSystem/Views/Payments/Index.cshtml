@@ -1,0 +1,111 @@
+﻿@model IEnumerable<PropertyRentalManagementSystem.Models.Payment>
+
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<h2>Manage Payments</h2>
+
+<!-- Summary Cards -->
+<div class="container">
+    <div class="row text-center mt-4">
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>Approved Payments</h3>
+                <h2>@ViewBag.ApprovedPaymentsCount</h2>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>Cancelled Payments</h3>
+                <h2>@ViewBag.CancelledPaymentsCount</h2>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>In Progress Payments</h3>
+                <h2>@ViewBag.InProgressPaymentsCount</h2>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="dashboard-card">
+                <h3>Rejected Payments</h3>
+                <h2>@ViewBag.RejectedPaymentsCount</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Filters -->
+@using (Html.BeginForm("Index", "Payments", FormMethod.Get))
+{
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-3">
+                <label for="tenantSearch">Tenant Name:</label>
+                <input type="text" id="tenantSearch" name="tenantSearch" class="form-control" placeholder="Search by tenant name..." />
+            </div>
+            <div class="col-md-3">
+                <label for="statusSearch">Status:</label>
+                @Html.DropDownList("statusId", ViewBag.StatusId as SelectList, "Select Status", new { @class = "form-control" })
+            </div>
+            <div class="col-md-3">
+                <label for="agreementSearch">Agreement:</label>
+                @Html.DropDownList("agreementId", ViewBag.AgreementId as SelectList, "Select Agreement", new { @class = "form-control" })
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-2">Search</button>
+        <a href="@Url.Action("Index")" class="btn btn-secondary mt-2">List All</a>
+    </div>
+}
+
+<!-- Payments List -->
+<div class="container mt-4">
+    <h3>List of Payments</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Tenant Name</th>
+                <th>Agreement</th>
+                <th>Building & Apartment</th>
+                <th>Amount</th>
+                <th>Method of Payment</th>
+                <th>Date Paid</th>
+                <th>Status</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var payment in Model)
+            {
+                <tr>
+                    <td>@payment.User.FirstName @payment.User.LastName</td>
+                    <td>@payment.AgreementId</td>
+                    <td>@payment.RentalAgreement.Apartment.Building.BuildingName - Apt @payment.RentalAgreement.Apartment.AppartmentNumber</td>
+                    <td>@payment.Amount</td>
+                    <td>@payment.MethodOfPayment</td>
+                    <td>@payment.DatePaid</td> <!-- Format date correctly -->
+                    <td>@payment.Status.StatusName</td>
+                    <td class="text-center">
+                        @Html.ActionLink("Details", "Details", new { id = payment.PaymentId }, new { @class = "btn btn-info btn-sm" })
+                        @Html.ActionLink("Edit", "Edit", new { id = payment.PaymentId }, new { @class = "btn btn-warning btn-sm" }) <!-- Added Edit button -->
+                        @Html.ActionLink("Delete", "Delete", new { id = payment.PaymentId }, new { @class = "btn btn-danger btn-sm"})
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<a href="@Url.Action("Index", "PropertyManagerDashboard")" class="btn btn-primary mt-4">Back to Dashboard</a>

@@ -148,7 +148,9 @@
     <Compile Include="Controllers\ManagerController.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Controllers\OwnersAdministratorsDashboardController.cs" />
+    <Compile Include="Controllers\PaymentsController.cs" />
     <Compile Include="Controllers\PropertyManagerDashboardController.cs" />
+    <Compile Include="Controllers\RentalAgreementsController.cs" />
     <Compile Include="Controllers\TenantController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -273,6 +275,16 @@
     <Content Include="Views\Messages\Details.cshtml" />
     <Content Include="Views\Messages\Index.cshtml" />
     <Content Include="Views\PropertyManagerDashboard\Index.cshtml" />
+    <Content Include="Views\Payments\Create.cshtml" />
+    <Content Include="Views\Payments\Delete.cshtml" />
+    <Content Include="Views\Payments\Details.cshtml" />
+    <Content Include="Views\Payments\Edit.cshtml" />
+    <Content Include="Views\Payments\Index.cshtml" />
+    <Content Include="Views\RentalAgreements\Create.cshtml" />
+    <Content Include="Views\RentalAgreements\Delete.cshtml" />
+    <Content Include="Views\RentalAgreements\Details.cshtml" />
+    <Content Include="Views\RentalAgreements\Edit.cshtml" />
+    <Content Include="Views\RentalAgreements\Index.cshtml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
