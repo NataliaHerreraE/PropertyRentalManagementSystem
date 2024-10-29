@@ -1,50 +1,38 @@
 ﻿@model PropertyRentalManagementSystem.Models.RentalAgreement
 
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = "Rental Agreement Details";
+    bool isActive = Model.EndDate >= DateTime.Today;
 }
 
-<h2>Details</h2>
+<h2 class="dashboard-title">Rental Agreement Details</h2>
 
-<div>
-    <h4>RentalAgreement</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.StartDate)
-        </dt>
+<div class="apartment-details-card">
+    <!-- Status Indicator -->
+    <div class="apartment-info">
+        <h3>Status: @(isActive ? "Active" : "Inactive")</h3>
+    </div>
 
-        <dd>
-            @Html.DisplayFor(model => model.StartDate)
-        </dd>
+    <!-- Agreement Information -->
+    <div class="apartment-info">
+        <h4>Tenant Name:</h4>
+        <p>@Model.User.FirstName @Model.User.LastName</p>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.EndDate)
-        </dt>
+        <h4>Agreement Dates:</h4>
+        <p><strong>Start Date:</strong> @Model.StartDate.ToString("yyyy-MM-dd")</p>
+        <p><strong>End Date:</strong> @Model.EndDate.ToString("yyyy-MM-dd")</p>
 
-        <dd>
-            @Html.DisplayFor(model => model.EndDate)
-        </dd>
+        <h4>Location Details:</h4>
+        <p><strong>Building:</strong> @Model.Apartment.Building.BuildingName</p>
+        <p><strong>Apartment:</strong> Apartment @Model.Apartment.AppartmentNumber</p>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Apartment.AppartmentNumber)
-        </dt>
+        <h4>Additional Information:</h4>
+        <p><strong>Agreement ID:</strong> @Model.AgreementId</p>
+    </div>
 
-        <dd>
-            @Html.DisplayFor(model => model.Apartment.AppartmentNumber)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.User.FirstName)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.User.FirstName)
-        </dd>
-
-    </dl>
+    <!-- Action Buttons -->
+    <div class="details-actions">
+        @Html.ActionLink("Edit Agreement", "Edit", new { id = Model.AgreementId }, new { @class = "btn btn-warning" })
+        @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.AgreementId }) |
-    @Html.ActionLink("Back to List", "Index")
-</p>

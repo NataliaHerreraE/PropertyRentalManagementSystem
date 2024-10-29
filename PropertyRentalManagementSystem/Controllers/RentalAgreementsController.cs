@@ -15,9 +15,33 @@ namespace PropertyRentalManagementSystem.Controllers
         private PropertyRentalManagementDBEntities db = new PropertyRentalManagementDBEntities();
 
         // GET: RentalAgreements
-        public ActionResult Index()
+        public ActionResult Index(string tenantSearch, string buildingOrApartmentSearch)
         {
-            var rentalAgreements = db.RentalAgreements.Include(r => r.Apartment).Include(r => r.User);
+            int userId = (int)Session["UserId"];
+
+            // Query to fetch rental agreements managed by the logged-in property manager
+            var rentalAgreements = db.RentalAgreements
+                .Include(r => r.Apartment)
+                .Include(r => r.Apartment.Building)
+                .Include(r => r.User) // Tenant information
+                .Where(r => r.Apartment.Building.PropertyManagerId == userId);
+
+            // Determine active and inactive rental agreements
+            DateTime today = DateTime.Today;
+            ViewBag.ActiveAgreementsCount = rentalAgreements.Count(r => r.EndDate >= today);
+            ViewBag.InactiveAgreementsCount = rentalAgreements.Count(r => r.EndDate < today);
+
+            // Apply filters
+            if (!string.IsNullOrEmpty(tenantSearch))
+            {
+                rentalAgreements = rentalAgreements.Where(r => (r.User.FirstName + " " + r.User.LastName).Contains(tenantSearch));
+            }
+            if (!string.IsNullOrEmpty(buildingOrApartmentSearch))
+            {
+                rentalAgreements = rentalAgreements.Where(r => r.Apartment.Building.BuildingName.Contains(buildingOrApartmentSearch) ||
+                                                               r.Apartment.AppartmentNumber.Contains(buildingOrApartmentSearch));
+            }
+
             return View(rentalAgreements.ToList());
         }
 

@@ -1,51 +1,92 @@
 ﻿@model IEnumerable<PropertyRentalManagementSystem.Models.RentalAgreement>
 
-@{
-    ViewBag.Title = "Index";
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
 }
 
-<h2>Index</h2>
-
-<p>
-    @Html.ActionLink("Create New", "Create")
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.StartDate)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.EndDate)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.Apartment.AppartmentNumber)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.User.FirstName)
-        </th>
-        <th></th>
-    </tr>
-
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.StartDate)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.EndDate)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.Apartment.AppartmentNumber)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.User.FirstName)
-        </td>
-        <td>
-            @Html.ActionLink("Edit", "Edit", new { id=item.AgreementId }) |
-            @Html.ActionLink("Details", "Details", new { id=item.AgreementId }) |
-            @Html.ActionLink("Delete", "Delete", new { id=item.AgreementId })
-        </td>
-    </tr>
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
 }
 
-</table>
+
+<h2>Manage Rental Agreements</h2>
+
+<!-- Summary Cards for Active and Inactive Agreements -->
+<div class="container">
+    <div class="row text-center mt-4">
+        <div class="col-md-6 mb-4">
+            <div class="dashboard-card">
+                <h3>Active Agreements</h3>
+                <h2>@ViewBag.ActiveAgreementsCount</h2>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="dashboard-card">
+                <h3>Inactive Agreements</h3>
+                <h2>@ViewBag.InactiveAgreementsCount</h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Search Filters (Wrapped in Form for GET request) -->
+@using (Html.BeginForm("Index", "RentalAgreements", FormMethod.Get))
+{
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-4">
+                <label for="tenantSearch">Tenant Name:</label>
+                <input type="text" id="tenantSearch" name="tenantSearch" class="form-control" placeholder="Search by tenant name..." />
+            </div>
+            <div class="col-md-4">
+                <label for="buildingOrApartmentSearch">Building/Apartment:</label>
+                <input type="text" id="buildingOrApartmentSearch" name="buildingOrApartmentSearch" class="form-control" placeholder="Search by building or apartment number..." />
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary mt-2">Search</button>
+        <a href="@Url.Action("Index")" class="btn btn-secondary mt-2">List All</a>
+    </div>
+}
+<!-- Rental Agreements List -->
+<div class="container mt-4">
+    <h3>List of Rental Agreements</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Building & Apartment</th>
+                <th>Tenant Name</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Status</th>
+                <th class="text-center">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var agreement in Model)
+            {
+                <tr>
+                    <td>@agreement.Apartment.Building.BuildingName - Apt @agreement.Apartment.AppartmentNumber</td>
+                    <td>@agreement.User.FirstName @agreement.User.LastName</td>
+                    <td>@agreement.StartDate.ToString("yyyy-MM-dd")</td>
+                    <td>@agreement.EndDate.ToString("yyyy-MM-dd")</td>
+                    <td>@(agreement.EndDate >= DateTime.Today ? "Active" : "Inactive")</td>
+                    <td class="text-center">
+                        @Html.ActionLink("Details", "Details", new { id = agreement.AgreementId }, new { @class = "btn btn-info btn-sm" })
+                        @Html.ActionLink("Edit", "Edit", new { id = agreement.AgreementId }, new { @class = "btn btn-warning btn-sm" })
+                        @Html.ActionLink("Delete", "Delete", new { id = agreement.AgreementId }, new { @class = "btn btn-danger btn-sm", onclick = "return confirm('Are you sure you want to delete this agreement?');" })
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Create and Back to Dashboard Buttons -->
+<a href="@Url.Action("Create")" class="btn btn-success mt-4">Create New Agreement</a>
+<a href="@Url.Action("Index", "PropertyManagerDashboard")" class="btn btn-primary mt-4">Back to Dashboard</a>

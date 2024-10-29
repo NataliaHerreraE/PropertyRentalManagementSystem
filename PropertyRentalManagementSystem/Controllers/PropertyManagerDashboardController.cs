@@ -61,8 +61,10 @@ namespace PropertyRentalManagementSystem.Controllers
                 .Count(p => p.RentalAgreement.Apartment.Building.PropertyManagerId == userId);
 
             // Total Rental Agreements related to the Property Manager's Buildings
-            ViewBag.TotalAgreements = db.RentalAgreements
-                .Count(r => r.Apartment.Building.PropertyManagerId == userId);
+            ViewBag.RentalAgreementsCount = db.RentalAgreements
+                                               .Where(r => r.Apartment.Building.PropertyManagerId == userId)
+                                               .Count();
+
 
 
             return View();
