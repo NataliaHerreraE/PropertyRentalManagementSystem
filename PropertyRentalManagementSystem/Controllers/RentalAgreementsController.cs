@@ -18,28 +18,52 @@ namespace PropertyRentalManagementSystem.Controllers
         public ActionResult Index(string tenantSearch, string buildingOrApartmentSearch, int? statusId)
         {
             int userId = (int)Session["UserId"];
+            string roleName = (string)Session["RoleName"];
 
-            var agreements = db.RentalAgreements
-                .Include(ra => ra.Status)
-                .Include(ra => ra.Apartment)
-                .Include(ra => ra.Apartment.Building)
-                .Include(ra => ra.User)
-                .Where(ra => ra.Apartment.Building.PropertyManagerId == userId);
+            IQueryable<RentalAgreement> agreements;
 
-            // Filter by tenant name
-            if (!string.IsNullOrEmpty(tenantSearch))
+            if (roleName == "Tenant")
             {
-                agreements = agreements.Where(ra => (ra.User.FirstName + " " + ra.User.LastName).Contains(tenantSearch));
+                // Filter agreements by tenant's user ID
+                agreements = db.RentalAgreements
+                    .Include(ra => ra.Status)
+                    .Include(ra => ra.Apartment)
+                    .Include(ra => ra.Apartment.Building)
+                    .Where(ra => ra.TenantId == userId);
+
+                ViewBag.IsTenant = true;
+            }
+            else if (roleName == "Property Manager")
+            {
+                // Filter agreements by manager's buildings
+                agreements = db.RentalAgreements
+                    .Include(ra => ra.Status)
+                    .Include(ra => ra.Apartment)
+                    .Include(ra => ra.Apartment.Building)
+                    .Include(ra => ra.User) // Tenant's information
+                    .Where(ra => ra.Apartment.Building.PropertyManagerId == userId);
+
+                // Apply tenant search if provided (for managers)
+                if (!string.IsNullOrEmpty(tenantSearch))
+                {
+                    agreements = agreements.Where(ra => (ra.User.FirstName + " " + ra.User.LastName).Contains(tenantSearch));
+                }
+
+                ViewBag.IsTenant = false;
+            }
+            else
+            {
+                return RedirectToAction("Login", "Account"); // Redirect if the role is unrecognized
             }
 
-            // Filter by building or apartment number
+            // Apply building or apartment search if provided (for both roles)
             if (!string.IsNullOrEmpty(buildingOrApartmentSearch))
             {
                 agreements = agreements.Where(ra => ra.Apartment.Building.BuildingName.Contains(buildingOrApartmentSearch) ||
                                                      ra.Apartment.AppartmentNumber.ToString().Contains(buildingOrApartmentSearch));
             }
 
-            // Filter by status
+            // Apply status filter (for both roles)
             if (statusId.HasValue)
             {
                 agreements = agreements.Where(ra => ra.StatusId == statusId.Value);
@@ -50,12 +74,15 @@ namespace PropertyRentalManagementSystem.Controllers
             ViewBag.InactiveAgreementsCount = agreements.Count(ra => ra.Status.StatusName == "Inactive");
             ViewBag.CancelledAgreementsCount = agreements.Count(ra => ra.Status.StatusName == "Cancelled");
 
-            // Populate the status dropdown list with Active, Inactive, and Cancelled only
-            ViewBag.StatusOptions = new SelectList(db.Status.Where(s => s.StatusName == "Active" || s.StatusName == "Inactive" || s.StatusName == "Cancelled"),
-                                                   "StatusId", "StatusName", statusId);
+            // Populate the status dropdown list
+            ViewBag.StatusOptions = new SelectList(db.Status
+                .Where(s => s.StatusName == "Active" || s.StatusName == "Inactive" || s.StatusName == "Cancelled"),
+                "StatusId", "StatusName", statusId);
 
             return View(agreements.ToList());
         }
+
+
 
 
         // GET: RentalAgreements/Details/5

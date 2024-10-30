@@ -128,9 +128,11 @@
     }
 
     <!-- Back to Dashboard Button -->
-    <p>
-        <a href="@Url.Action("Index", "PropertyManagerDashboard")" class="btn btn-primary">Back to Dashboard</a>
-    </p>
+<p>
+    <a href="@Url.Action("Index", ViewBag.IsTenant == true ? "TenantsDashboard" : "PropertyManagerDashboard")" class="btn btn-primary mt-4">
+        Back to Dashboard
+    </a>
+</p>
 </div>
 
 <!-- JavaScript to Populate Apartments Based on Building Selection -->

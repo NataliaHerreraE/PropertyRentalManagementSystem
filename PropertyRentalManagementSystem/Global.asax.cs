@@ -13,6 +13,7 @@ namespace PropertyRentalManagementSystem
         {
             AreaRegistration.RegisterAllAreas();
             RouteConfig.RegisterRoutes(RouteTable.Routes);
+          
         }
     }
 }

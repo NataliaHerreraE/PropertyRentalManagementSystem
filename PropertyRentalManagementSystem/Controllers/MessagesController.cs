@@ -20,6 +20,10 @@ namespace PropertyRentalManagementSystem.Controllers
         public ActionResult Index(string fromUserSearch, string toUserSearch, int? buildingId, int? apartmentId)
         {
             int userId = (int)Session["UserId"];
+            string roleName = (string)Session["RoleName"];
+
+            // Set ViewBag.IsTenant based on the role
+            ViewBag.IsTenant = roleName == "Tenant";
 
             var messagesQuery = db.Messages
                 .Include(m => m.Apartment)
@@ -66,6 +70,7 @@ namespace PropertyRentalManagementSystem.Controllers
 
             return View(viewModel);
         }
+
 
 
 

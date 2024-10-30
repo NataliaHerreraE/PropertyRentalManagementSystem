@@ -17,28 +17,50 @@ namespace PropertyRentalManagementSystem.Controllers
         // GET: Payments
         public ActionResult Index(string tenantSearch, int? statusId, int? agreementId)
         {
-            int propertyManagerId = (int)Session["UserId"];
+            int userId = (int)Session["UserId"];
+            string roleName = (string)Session["RoleName"];
 
-            // Retrieve payments related to agreements managed by this property manager
-            var payments = db.Payments
-                .Include(p => p.Status)
-                .Include(p => p.RentalAgreement)
-                .Include(p => p.RentalAgreement.Apartment)
-                .Include(p => p.RentalAgreement.Apartment.Building)
-                .Include(p => p.User)
-                .Where(p => p.RentalAgreement.Apartment.Building.PropertyManagerId == propertyManagerId);
+            IQueryable<Payment> payments;
+
+            if (roleName == "Tenant")
+            {
+                // Tenant can only view their own payments
+                payments = db.Payments
+                    .Include(p => p.Status)
+                    .Include(p => p.RentalAgreement)
+                    .Include(p => p.RentalAgreement.Apartment)
+                    .Include(p => p.RentalAgreement.Apartment.Building)
+                    .Where(p => p.UserId == userId);
+
+                ViewBag.IsTenant = true;
+            }
+            else if (roleName == "Property Manager")
+            {
+                // Property Manager views payments related to agreements they manage
+                payments = db.Payments
+                    .Include(p => p.Status)
+                    .Include(p => p.RentalAgreement)
+                    .Include(p => p.RentalAgreement.Apartment)
+                    .Include(p => p.RentalAgreement.Apartment.Building)
+                    .Include(p => p.User)
+                    .Where(p => p.RentalAgreement.Apartment.Building.PropertyManagerId == userId);
+
+                ViewBag.IsTenant = false;
+            }
+            else
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
             // Apply search filters
             if (!string.IsNullOrEmpty(tenantSearch))
             {
                 payments = payments.Where(p => (p.User.FirstName + " " + p.User.LastName).Contains(tenantSearch));
             }
-
             if (statusId.HasValue)
             {
                 payments = payments.Where(p => p.StatusId == statusId.Value);
             }
-
             if (agreementId.HasValue)
             {
                 payments = payments.Where(p => p.AgreementId == agreementId.Value);
@@ -52,29 +74,35 @@ namespace PropertyRentalManagementSystem.Controllers
 
             // Populate dropdown lists for filtering
             ViewBag.StatusId = new SelectList(db.Status.Where(s => s.StatusName == "Approved" || s.StatusName == "Cancelled" || s.StatusName == "In Progress" || s.StatusName == "Rejected"), "StatusId", "StatusName", statusId);
-            ViewBag.AgreementId = new SelectList(db.RentalAgreements
-                .Where(ra => ra.Apartment.Building.PropertyManagerId == propertyManagerId)
-                .Select(ra => new
-                {
-                    ra.AgreementId,
-                    DisplayText = "Agreement #" + ra.AgreementId + " - " + ra.Apartment.Building.BuildingName + " - Apt " + ra.Apartment.AppartmentNumber
-                }),
-                "AgreementId", "DisplayText", agreementId);
+
+            // Agreement dropdown specific to Property Manager
+            if (roleName == "Property Manager")
+            {
+                ViewBag.AgreementId = new SelectList(db.RentalAgreements
+                    .Where(ra => ra.Apartment.Building.PropertyManagerId == userId)
+                    .Select(ra => new
+                    {
+                        ra.AgreementId,
+                        DisplayText = "Agreement #" + ra.AgreementId + " - " + ra.Apartment.Building.BuildingName + " - Apt " + ra.Apartment.AppartmentNumber
+                    }),
+                    "AgreementId", "DisplayText", agreementId);
+            }
+
+
 
             return View(payments.ToList());
         }
-
 
 
         // GET: Payments/Details/5
         public ActionResult Details(int id)
         {
             var payment = db.Payments
-                .Include(p => p.User) // Tenant info
-                .Include(p => p.Status)
                 .Include(p => p.RentalAgreement)
                 .Include(p => p.RentalAgreement.Apartment)
                 .Include(p => p.RentalAgreement.Apartment.Building)
+                .Include(p => p.User)
+                .Include(p => p.Status)
                 .FirstOrDefault(p => p.PaymentId == id);
 
             if (payment == null)
@@ -82,37 +110,73 @@ namespace PropertyRentalManagementSystem.Controllers
                 return HttpNotFound();
             }
 
+            // Set ViewBag.IsTenant based on the user's role
+            var roleName = (string)Session["RoleName"];
+            ViewBag.IsTenant = roleName == "Tenant";
+
             return View(payment);
         }
+
 
         // GET: Payments/Create
         public ActionResult Create()
         {
-            ViewBag.AgreementId = new SelectList(db.RentalAgreements, "AgreementId", "AgreementId");
-            ViewBag.StatusId = new SelectList(db.Status, "StatusId", "StatusName");
-            ViewBag.UserId = new SelectList(db.Users, "UserId", "FirstName");
+            int tenantId = (int)Session["UserId"]; // Retrieve the logged-in user's ID (assuming they are a tenant)
+
+            // Populate agreements associated with the tenant based on TenantId
+            ViewBag.AgreementList = new SelectList(db.RentalAgreements
+                .Where(ra => ra.TenantId == tenantId) // Filter agreements by TenantId
+                .Select(ra => new
+                {
+                    ra.AgreementId,
+                    DisplayText = "Agreement #" + ra.AgreementId + " - " + ra.Apartment.Building.BuildingName + " - Apt " + ra.Apartment.AppartmentNumber
+                }),
+                "AgreementId", "DisplayText");
+
+            // Payment method options
+            ViewBag.PaymentMethods = new SelectList(new[]
+            {
+                "Debit Card", "Credit Card", "PayPal", "Bank Transfer", "Cash"
+            });
+
             return View();
         }
 
         // POST: Payments/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "PaymentId,UserId,AgreementId,Amount,DatePaid,MethodOfPayment,StatusId")] Payment payment)
+        public ActionResult Create(Payment payment)
         {
+            int tenantId = (int)Session["UserId"]; // Retrieve the logged-in user's ID (assuming they are a tenant)
+            payment.UserId = tenantId; // Assign the logged-in tenant's UserId
+            payment.StatusId = 5; // Set default status to "In Process" with ID 5
+
             if (ModelState.IsValid)
             {
                 db.Payments.Add(payment);
                 db.SaveChanges();
+                TempData["SuccessMessage"] = "Payment successfully created!";
                 return RedirectToAction("Index");
             }
 
-            ViewBag.AgreementId = new SelectList(db.RentalAgreements, "AgreementId", "AgreementId", payment.AgreementId);
-            ViewBag.StatusId = new SelectList(db.Status, "StatusId", "StatusName", payment.StatusId);
-            ViewBag.UserId = new SelectList(db.Users, "UserId", "FirstName", payment.UserId);
+            // Repopulate dropdowns if model state is invalid
+            ViewBag.AgreementList = new SelectList(db.RentalAgreements
+                .Where(ra => ra.TenantId == tenantId) // Filter agreements by TenantId
+                .Select(ra => new
+                {
+                    ra.AgreementId,
+                    DisplayText = "Agreement #" + ra.AgreementId + " - " + ra.Apartment.Building.BuildingName + " - Apt " + ra.Apartment.AppartmentNumber
+                }),
+                "AgreementId", "DisplayText");
+
+            ViewBag.PaymentMethods = new SelectList(new[]
+            {
+                "Debit Card", "Credit Card", "PayPal", "Bank Transfer", "Cash"
+            });
+
             return View(payment);
         }
+
 
         // GET: Payments/Edit/5
         public ActionResult Edit(int id)

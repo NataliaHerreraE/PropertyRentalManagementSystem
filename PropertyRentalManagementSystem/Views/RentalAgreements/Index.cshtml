@@ -1,22 +1,8 @@
 ﻿@model IEnumerable<PropertyRentalManagementSystem.Models.RentalAgreement>
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success">
-        @TempData["SuccessMessage"]
-    </div>
-}
+<h2>@(ViewBag.IsTenant == true ? "My Rental Agreements" : "Manage Rental Agreements")</h2>
 
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger">
-        @TempData["ErrorMessage"]
-    </div>
-}
-
-<h2>Manage Rental Agreements</h2>
-
-<!-- Summary Cards for Active, Inactive, and Cancelled Agreements -->
+<!-- Summary Cards -->
 <div class="container">
     <div class="row text-center mt-4">
         <div class="col-md-4 mb-4">
@@ -40,18 +26,21 @@
     </div>
 </div>
 
-<!-- Search Filters (Wrapped in Form for GET request) -->
+<!-- Search Filters -->
 @using (Html.BeginForm("Index", "RentalAgreements", FormMethod.Get))
 {
     <div class="container mt-4">
         <div class="row">
-            <div class="col-md-4">
-                <label for="tenantSearch">Tenant Name:</label>
-                <input type="text" id="tenantSearch" name="tenantSearch" class="form-control" placeholder="Search by tenant name..." />
-            </div>
+            @if (ViewBag.IsTenant != true)
+            {
+                <div class="col-md-4">
+                    <label for="tenantSearch">Tenant Name:</label>
+                    <input type="text" id="tenantSearch" name="tenantSearch" value="@Request.QueryString["tenantSearch"]" class="form-control" placeholder="Search by tenant name..." />
+                </div>
+            }
             <div class="col-md-4">
                 <label for="buildingOrApartmentSearch">Building/Apartment:</label>
-                <input type="text" id="buildingOrApartmentSearch" name="buildingOrApartmentSearch" class="form-control" placeholder="Search by building or apartment number..." />
+                <input type="text" id="buildingOrApartmentSearch" name="buildingOrApartmentSearch" value="@Request.QueryString["buildingOrApartmentSearch"]" class="form-control" placeholder="Search by building or apartment number..." />
             </div>
             <div class="col-md-4">
                 <label for="statusSearch">Status:</label>
@@ -70,7 +59,7 @@
         <thead>
             <tr>
                 <th>Building & Apartment</th>
-                <th>Tenant Name</th>
+                <th>@(ViewBag.IsTenant == true ? "Manager Name" : "Tenant Name")</th>
                 <th>Start Date</th>
                 <th>End Date</th>
                 <th>Status</th>
@@ -82,14 +71,28 @@
             {
                 <tr>
                     <td>@agreement.Apartment.Building.BuildingName - Apt @agreement.Apartment.AppartmentNumber</td>
-                    <td>@agreement.User.FirstName @agreement.User.LastName</td>
+                    <td>
+                        @if (ViewBag.IsTenant == true)
+                        {
+                            <!-- Display Property Manager's Name for Tenant -->
+                            @agreement.Apartment.Building.User.FirstName @agreement.Apartment.Building.User.LastName
+                        }
+                        else
+                        {
+                            <!-- Display Tenant's Name for Manager -->
+                            @agreement.User.FirstName @agreement.User.LastName
+                        }
+                    </td>
                     <td>@agreement.StartDate.ToString("yyyy-MM-dd")</td>
                     <td>@agreement.EndDate.ToString("yyyy-MM-dd")</td>
-                    <td>@agreement.Status.StatusName</td> <!-- Updated to display status from DB -->
+                    <td>@agreement.Status.StatusName</td>
                     <td class="text-center">
                         @Html.ActionLink("Details", "Details", new { id = agreement.AgreementId }, new { @class = "btn btn-info btn-sm" })
-                        @Html.ActionLink("Edit", "Edit", new { id = agreement.AgreementId }, new { @class = "btn btn-warning btn-sm" })
-                        @Html.ActionLink("Delete", "Delete", new { id = agreement.AgreementId }, new { @class = "btn btn-danger btn-sm"})
+                        @if (ViewBag.IsTenant != true)
+                        {
+                            @Html.ActionLink("Edit", "Edit", new { id = agreement.AgreementId }, new { @class = "btn btn-warning btn-sm" })
+                            @Html.ActionLink("Delete", "Delete", new { id = agreement.AgreementId }, new { @class = "btn btn-danger btn-sm" })
+                        }
                     </td>
                 </tr>
             }
@@ -97,6 +100,9 @@
     </table>
 </div>
 
-<!-- Create and Back to Dashboard Buttons -->
-<a href="@Url.Action("Create")" class="btn btn-success mt-4">Create New Agreement</a>
-<a href="@Url.Action("Index", "PropertyManagerDashboard")" class="btn btn-primary mt-4">Back to Dashboard</a>
+<!-- Back to Dashboard Button -->
+<p>
+    <a href="@Url.Action("Index", ViewBag.IsTenant == true ? "TenantsDashboard" : "PropertyManagerDashboard")" class="btn btn-primary mt-4">
+        Back to Dashboard
+    </a>
+</p>

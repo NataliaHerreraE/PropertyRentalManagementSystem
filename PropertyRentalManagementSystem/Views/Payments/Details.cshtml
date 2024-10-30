@@ -116,6 +116,10 @@
 
 <!-- Button to go back to the payments list -->
 <div class="mt-4">
-    <a href="@Url.Action("Edit", "Payments", new { id = Model.PaymentId })" class="btn btn-warning">Edit</a> <!-- Edit Button -->
+    @if (ViewBag.IsTenant != true)
+    {
+        <!-- Only display the Edit button if the user is not a tenant (i.e., is a manager) -->
+        <a href="@Url.Action("Edit", "Payments", new { id = Model.PaymentId })" class="btn btn-warning">Edit</a>
+    }
     <a href="@Url.Action("Index", "Payments")" class="btn btn-primary">Back to Payments List</a>
 </div>
